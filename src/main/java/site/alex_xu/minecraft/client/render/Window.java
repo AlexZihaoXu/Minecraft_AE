@@ -103,6 +103,9 @@ public class Window extends RenderContext {
 
     public void onDispose() {
         onDisposeCallback.execute();
+        getLogger().info("Shutting down ...");
+        glfwSetWindowShouldClose(windowHandle, true);
+        glfwTerminate();
     }
 
     // Getters
@@ -122,6 +125,7 @@ public class Window extends RenderContext {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (windowThreadLock.isLocked()) {
                 getLogger().warn("Shutdown signal received.");
+                glfwSetWindowShouldClose(windowHandle, true);
                 windowThreadLock.lock();
             }
         }));

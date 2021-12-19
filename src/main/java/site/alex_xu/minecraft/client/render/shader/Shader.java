@@ -99,10 +99,10 @@ public class Shader extends Freeable {
 
         if (glGetShaderi(shaderID, GL_COMPILE_STATUS) == 0) {
             getLogger().error("Failed to compile: " + path);
-            String reason = "Failed to compile " + shaderTypeName + " shader: " + glGetShaderInfoLog(shaderID);
-            getLogger().error(reason);
+            String message = "Failed to compile " + shaderTypeName + " shader: " + glGetShaderInfoLog(shaderID);
+            getLogger().error(message);
             glDeleteShader(shaderID);
-            throw new RuntimeException(reason);
+            throw new RuntimeException(message);
         }
 
         glAttachShader(programID, shaderID);
@@ -115,9 +115,9 @@ public class Shader extends Freeable {
         }
         glLinkProgram(programID);
         if (glGetProgrami(programID, GL_LINK_STATUS) == 0) {
-            String reason = "Failed to link shader program: " + glGetProgramInfoLog(programID);
-            getLogger().error(reason);
-            throw new IllegalStateException(reason);
+            String message = "Failed to link shader program: " + glGetProgramInfoLog(programID);
+            getLogger().error(message);
+            throw new IllegalStateException(message);
         }
         for (Integer id : this.shaderIds) {
             glDeleteShader(id);

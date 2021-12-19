@@ -41,9 +41,9 @@ public class VertexArray extends BufferType{
     public VertexArray() {
         id = glGenVertexArrays();
         if (id == 0) {
-            String reason = "Unable create vertex array object!";
-            getLogger().error(reason);
-            throw new IllegalStateException(reason);
+            String message = "Unable create vertex array object!";
+            getLogger().error(message);
+            throw new IllegalStateException(message);
         }
         bind();
     }

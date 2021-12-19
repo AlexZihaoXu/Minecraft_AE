@@ -1,10 +1,11 @@
 package site.alex_xu.minecraft.client.render;
 
+import site.alex_xu.minecraft.core.Minecraft;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public abstract class RenderContext {
+public abstract class RenderContext extends MinecraftAECore {
     protected int width = -1, height = -1;
     protected int contextID = 0;
 
