@@ -1,0 +1,94 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': ''
+        )
+    }
+}
+
+group 'site.alex_xu.minecraft'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+project.ext.lwjglVersion = "3.3.0"
+
+
+dependencies {
+
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
+    implementation group: 'org.joml', name: 'joml', version: '1.10.2'
+
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-jawt"
+    implementation "org.lwjgl:lwjgl-openal"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-stb"
+
+    // ALL SYSTEMS
+    implementation "org.lwjgl:lwjgl::natives-linux"
+    implementation "org.lwjgl:lwjgl-glfw::natives-linux"
+    implementation "org.lwjgl:lwjgl-openal::natives-linux"
+    implementation "org.lwjgl:lwjgl-opengl::natives-linux"
+    implementation "org.lwjgl:lwjgl-stb::natives-linux"
+//
+//    implementation "org.lwjgl:lwjgl::natives-linux-arm64"
+//    implementation "org.lwjgl:lwjgl-glfw::natives-linux-arm64"
+//    implementation "org.lwjgl:lwjgl-openal::natives-linux-arm64"
+//    implementation "org.lwjgl:lwjgl-opengl::natives-linux-arm64"
+//    implementation "org.lwjgl:lwjgl-stb::natives-linux-arm64"
+//
+//    implementation "org.lwjgl:lwjgl::natives-linux-arm32"
+//    implementation "org.lwjgl:lwjgl-glfw::natives-linux-arm32"
+//    implementation "org.lwjgl:lwjgl-openal::natives-linux-arm32"
+//    implementation "org.lwjgl:lwjgl-opengl::natives-linux-arm32"
+//    implementation "org.lwjgl:lwjgl-stb::natives-linux-arm32"
+
+    implementation "org.lwjgl:lwjgl::natives-macos-arm64"
+    implementation "org.lwjgl:lwjgl-glfw::natives-macos-arm64"
+    implementation "org.lwjgl:lwjgl-openal::natives-macos-arm64"
+    implementation "org.lwjgl:lwjgl-opengl::natives-macos-arm64"
+    implementation "org.lwjgl:lwjgl-stb::natives-macos-arm64"
+
+    implementation "org.lwjgl:lwjgl::natives-macos"
+    implementation "org.lwjgl:lwjgl-glfw::natives-macos"
+    implementation "org.lwjgl:lwjgl-openal::natives-macos"
+    implementation "org.lwjgl:lwjgl-opengl::natives-macos"
+    implementation "org.lwjgl:lwjgl-stb::natives-macos"
+
+    implementation "org.lwjgl:lwjgl::natives-windows"
+    implementation "org.lwjgl:lwjgl-glfw::natives-windows"
+    implementation "org.lwjgl:lwjgl-openal::natives-windows"
+    implementation "org.lwjgl:lwjgl-opengl::natives-windows"
+    implementation "org.lwjgl:lwjgl-stb::natives-windows"
+//
+//    implementation "org.lwjgl:lwjgl::natives-windows-arm64"
+//    implementation "org.lwjgl:lwjgl-glfw::natives-windows-arm64"
+//    implementation "org.lwjgl:lwjgl-openal::natives-windows-arm64"
+//    implementation "org.lwjgl:lwjgl-opengl::natives-windows-arm64"
+//    implementation "org.lwjgl:lwjgl-stb::natives-windows-arm64"
+
+    implementation "org.lwjgl:lwjgl::natives-windows-x86"
+    implementation "org.lwjgl:lwjgl-glfw::natives-windows-x86"
+    implementation "org.lwjgl:lwjgl-openal::natives-windows-x86"
+    implementation "org.lwjgl:lwjgl-opengl::natives-windows-x86"
+    implementation "org.lwjgl:lwjgl-stb::natives-windows-x86"
+}
