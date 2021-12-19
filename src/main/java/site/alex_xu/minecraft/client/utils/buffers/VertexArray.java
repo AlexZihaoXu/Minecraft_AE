@@ -1,4 +1,4 @@
-package site.alex_xu.minecraft.client.render.buffers;
+package site.alex_xu.minecraft.client.utils.buffers;
 
 import java.util.ArrayList;
 

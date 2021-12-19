@@ -1,7 +1,6 @@
-package site.alex_xu.minecraft.client.render.buffers;
+package site.alex_xu.minecraft.client.utils.buffers;
 
-import site.alex_xu.minecraft.client.render.Freeable;
-import site.alex_xu.minecraft.core.MinecraftAECore;
+import site.alex_xu.minecraft.client.utils.Freeable;
 
 public abstract class BufferType extends Freeable {
 

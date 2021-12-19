@@ -1,12 +1,12 @@
 package site.alex_xu.minecraft.client;
 
-import site.alex_xu.minecraft.client.render.Framebuffer;
-import site.alex_xu.minecraft.client.render.Texture;
-import site.alex_xu.minecraft.client.render.Window;
-import site.alex_xu.minecraft.client.render.buffers.ElementBuffer;
-import site.alex_xu.minecraft.client.render.buffers.VertexArray;
-import site.alex_xu.minecraft.client.render.buffers.VertexBuffer;
-import site.alex_xu.minecraft.client.render.shader.Shader;
+import site.alex_xu.minecraft.client.utils.Framebuffer;
+import site.alex_xu.minecraft.client.utils.Texture;
+import site.alex_xu.minecraft.client.utils.Window;
+import site.alex_xu.minecraft.client.utils.buffers.ElementBuffer;
+import site.alex_xu.minecraft.client.utils.buffers.VertexArray;
+import site.alex_xu.minecraft.client.utils.buffers.VertexBuffer;
+import site.alex_xu.minecraft.client.utils.shader.Shader;
 import site.alex_xu.minecraft.client.resource.ResourceManager;
 import site.alex_xu.minecraft.core.Initializer;
 import site.alex_xu.minecraft.core.MinecraftAECore;
@@ -73,6 +73,7 @@ public class MinecraftClient extends MinecraftAECore {
         fbo.bindContext();
         glClearColor(1, 0, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     }
 
     public void onRender(double vdt) {
@@ -87,6 +88,10 @@ public class MinecraftClient extends MinecraftAECore {
         fbo.bind();
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        window.getRenderer().get2D()
+                .clear(0.5f)
+                .image(texture, 0, 0, 16, 16, 0, 0, 16, 16);
     }
 
     public void onDispose() {

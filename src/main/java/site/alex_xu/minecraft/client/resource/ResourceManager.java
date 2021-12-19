@@ -1,7 +1,5 @@
 package site.alex_xu.minecraft.client.resource;
 
-import org.apache.commons.io.IOUtils;
-import site.alex_xu.minecraft.client.render.Texture;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 
 import java.io.IOException;

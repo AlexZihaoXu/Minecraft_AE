@@ -1,4 +1,4 @@
-package site.alex_xu.minecraft.client.render;
+package site.alex_xu.minecraft.client.utils;
 
 import org.lwjgl.system.MemoryStack;
 

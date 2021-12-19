@@ -1,4 +1,4 @@
-package site.alex_xu.minecraft.client.render.buffers;
+package site.alex_xu.minecraft.client.utils.buffers;
 
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;

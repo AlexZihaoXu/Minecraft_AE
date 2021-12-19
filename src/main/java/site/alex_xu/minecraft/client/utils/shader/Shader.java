@@ -1,7 +1,7 @@
-package site.alex_xu.minecraft.client.render.shader;
+package site.alex_xu.minecraft.client.utils.shader;
 
 import org.joml.Matrix4f;
-import site.alex_xu.minecraft.client.render.Freeable;
+import site.alex_xu.minecraft.client.utils.Freeable;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

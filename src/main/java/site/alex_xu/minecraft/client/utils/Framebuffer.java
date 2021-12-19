@@ -1,4 +1,6 @@
-package site.alex_xu.minecraft.client.render;
+package site.alex_xu.minecraft.client.utils;
+
+import site.alex_xu.minecraft.client.render.Renderer;
 
 import java.nio.ByteBuffer;
 
@@ -6,7 +8,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL30.*;
 
-public class Framebuffer extends ImageType {
+public class Framebuffer extends ImageType implements BindableContext {
 
     private final int frameBufferID;
     private final int renderBufferID;
@@ -41,6 +43,10 @@ public class Framebuffer extends ImageType {
 
     public void genMipMap() {
         glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    public Renderer getRenderer() {
+        return new Renderer(this);
     }
 
     public void bindContext() {
