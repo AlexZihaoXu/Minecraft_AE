@@ -6,6 +6,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import javax.security.auth.callback.Callback;
 
+import java.util.HashSet;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
@@ -18,10 +19,37 @@ public class Window extends RenderContext {
     private final _OnRenderCallbackI renderCallback;
     private final _OnSetupCallbackI onSetupCallback;
     private final _OnDisposeCallbackI onDisposeCallback;
+    private final HashSet<_OnMouseButtonChangeCallbackI> mouseButtonChangeCallbacks = new HashSet<>();
+    private final HashSet<_OnMouseMoveCallbackI> mouseMoveCallbacks = new HashSet<>();
+    private final HashSet<_OnFocusChangeCallbackI> focusChangeCallbacks = new HashSet<>();
     private final String title;
     private final ReentrantLock windowThreadLock = new ReentrantLock();
     private long windowHandle;
     private boolean vsyncEnabled = false;
+
+    public void registerMouseButtonChangeCallback(_OnMouseButtonChangeCallbackI callback) {
+        mouseButtonChangeCallbacks.add(callback);
+    }
+
+    public void removeMouseButtonChangeCallback(_OnMouseButtonChangeCallbackI callback) {
+        mouseButtonChangeCallbacks.remove(callback);
+    }
+
+    public void registerMouseMoveCallback(_OnMouseMoveCallbackI mouseMoveCallback) {
+        mouseMoveCallbacks.add(mouseMoveCallback);
+    }
+
+    public void removeMouseMoveCallback(_OnMouseMoveCallbackI mouseMoveCallback) {
+        mouseMoveCallbacks.remove(mouseMoveCallback);
+    }
+
+    public void registerFocusChangeCallback(_OnFocusChangeCallbackI focusChangeCallback) {
+        focusChangeCallbacks.add(focusChangeCallback);
+    }
+
+    public void removeFocusChangeCallback(_OnFocusChangeCallbackI focusChangeCallback) {
+        focusChangeCallbacks.remove(focusChangeCallback);
+    }
 
     public Window(_OnSetupCallbackI setupCallback, _OnDisposeCallbackI onDisposeCallback, _OnRenderCallbackI renderCallback, String title, int width, int height) {
 
@@ -66,6 +94,7 @@ public class Window extends RenderContext {
         glfwSetCursorEnterCallback(getWindowHandle(), this::onMouseEnterLeave);
         glfwSetKeyCallback(getWindowHandle(), this::onKeyChange);
         glfwSetCursorPosCallback(getWindowHandle(), this::onMouseMove);
+        glfwSetWindowFocusCallback(getWindowHandle(), this::onFocusChange);
 
         glEnable(GL_DEBUG_OUTPUT);
         if (!System.getProperty("os.name").toLowerCase().strip().contains("mac"))
@@ -79,6 +108,13 @@ public class Window extends RenderContext {
 
     // Events
 
+    public void onFocusChange(long window, boolean focused) {
+        for (_OnFocusChangeCallbackI focusChangeCallback : focusChangeCallbacks) {
+            focusChangeCallback.execute(focused);
+        }
+    }
+
+
     public void onResize(long window, int width, int height) {
         this.width = width;
         this.height = height;
@@ -86,11 +122,16 @@ public class Window extends RenderContext {
     }
 
     public void onMouseButtonChange(long window, int button, int action, int mods) {
-
+        boolean pressed = action == GLFW_PRESS;
+        for (_OnMouseButtonChangeCallbackI mouseButtonChangeCallback : mouseButtonChangeCallbacks) {
+            mouseButtonChangeCallback.execute(button, pressed);
+        }
     }
 
     public void onMouseMove(long window, double x, double y) {
-
+        for (_OnMouseMoveCallbackI mouseMoveCallback : mouseMoveCallbacks) {
+            mouseMoveCallback.execute(x, y);
+        }
     }
 
     public void onMouseEnterLeave(long window, boolean entered) {
@@ -173,5 +214,17 @@ public class Window extends RenderContext {
 
     public interface _OnDisposeCallbackI extends Callback {
         void execute();
+    }
+
+    public interface _OnMouseButtonChangeCallbackI extends Callback {
+        void execute(int button, boolean pressed);
+    }
+
+    public interface _OnMouseMoveCallbackI extends Callback {
+        void execute(double x, double y);
+    }
+
+    public interface _OnFocusChangeCallbackI extends Callback {
+        void execute(boolean focused);
     }
 }

@@ -192,4 +192,12 @@ public class Renderer2D extends Renderer {
 
         return this;
     }
+
+    public void image(ImageType image, float srcX, float srcY, float srcW, float srcH, float dstX, float dstY) {
+        image(image, srcX, srcY, srcW, srcH, dstX, dstY, srcW, srcH);
+    }
+
+    public void image(ImageType image, float x, float y) {
+        image(image, 0, 0, image.getWidth(), image.getHeight(), x, y, image.getWidth(), image.getHeight());
+    }
 }

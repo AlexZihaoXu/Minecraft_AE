@@ -37,4 +37,8 @@ public class Renderer extends MinecraftAECore {
     public Renderer2D get2D() {
         return new Renderer2D(this.bindableContext);
     }
+
+    public ModelRenderer get3D() {
+        return new ModelRenderer(this.bindableContext);
+    }
 }
