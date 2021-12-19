@@ -27,6 +27,16 @@ public class MinecraftClient extends MinecraftAECore {
     public void run() {
         getLogger().info("Minecraft (Alex Edition) " + Minecraft.VERSION);
         Initializer.getInstance().initClient();
-        window = new Window(856, 482);
+        window = new Window(this::onRender,"Minecraft(AE) " + Minecraft.VERSION, 856, 482);
+        window.run();
+    }
+
+    public Window getWindow() {
+        return window;
+    }
+
+    // Render
+    public void onRender(double vdt) {
+        window.clear(1, 1, 1, 1);
     }
 }
