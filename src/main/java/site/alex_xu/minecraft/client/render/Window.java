@@ -6,6 +6,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import javax.security.auth.callback.Callback;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import static org.apache.logging.log4j.LogManager.getLogger;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -14,13 +16,19 @@ import static org.lwjgl.opengl.GL43.*;
 
 public class Window extends RenderContext {
     private final _OnRenderCallbackI renderCallback;
-    private String title;
+    private final _OnSetupCallbackI onSetupCallback;
+    private final _OnDisposeCallbackI onDisposeCallback;
+    private final String title;
+    private final ReentrantLock windowThreadLock = new ReentrantLock();
     private long windowHandle;
     private boolean vsyncEnabled = false;
 
-    public Window(_OnRenderCallbackI renderCallback, String title, int width, int height) {
+    public Window(_OnSetupCallbackI setupCallback, _OnDisposeCallbackI onDisposeCallback, _OnRenderCallbackI renderCallback, String title, int width, int height) {
+
         this.title = title;
+        this.onSetupCallback = setupCallback;
         this.renderCallback = renderCallback;
+        this.onDisposeCallback = onDisposeCallback;
         this.width = width;
         this.height = height;
     }
@@ -72,7 +80,9 @@ public class Window extends RenderContext {
     // Events
 
     public void onResize(long window, int width, int height) {
-
+        this.width = width;
+        this.height = height;
+        glViewport(0, 0, width, height);
     }
 
     public void onMouseButtonChange(long window, int button, int action, int mods) {
@@ -91,6 +101,10 @@ public class Window extends RenderContext {
 
     }
 
+    public void onDispose() {
+        onDisposeCallback.execute();
+    }
+
     // Getters
 
     public long getWindowHandle() {
@@ -103,17 +117,35 @@ public class Window extends RenderContext {
     public void run() {
 
         createWindow();
-
         double lastRenderTime = glfwGetTime();
-        while (!glfwWindowShouldClose(getWindowHandle())) {
 
-            double now = glfwGetTime();
-            renderCallback.execute(now - lastRenderTime);
-            lastRenderTime = now;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (windowThreadLock.isLocked()) {
+                getLogger().warn("Shutdown signal received.");
+                windowThreadLock.lock();
+            }
+        }));
 
-            glfwSwapBuffers(getWindowHandle());
-            glfwPollEvents();
+        try {
+            windowThreadLock.lock();
+            onSetupCallback.execute();
+            while (!glfwWindowShouldClose(getWindowHandle())) {
+
+                double now = glfwGetTime();
+                renderCallback.execute(now - lastRenderTime);
+                lastRenderTime = now;
+
+                glfwSwapBuffers(getWindowHandle());
+                glfwPollEvents();
+            }
+        } finally {
+            try {
+                onDispose();
+            } finally {
+                windowThreadLock.unlock();
+            }
         }
+
     }
 
     // Context
@@ -129,5 +161,13 @@ public class Window extends RenderContext {
 
     public interface _OnRenderCallbackI extends Callback {
         void execute(double videoDeltaTime);
+    }
+
+    public interface _OnSetupCallbackI extends Callback {
+        void execute();
+    }
+
+    public interface _OnDisposeCallbackI extends Callback {
+        void execute();
     }
 }
