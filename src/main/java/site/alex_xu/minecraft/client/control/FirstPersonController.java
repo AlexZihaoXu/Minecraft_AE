@@ -3,10 +3,11 @@ package site.alex_xu.minecraft.client.control;
 import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.utils.Window;
 import site.alex_xu.minecraft.core.MinecraftAECore;
+import site.alex_xu.minecraft.core.Tickable;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class FirstPersonController extends MinecraftAECore {
+public class FirstPersonController extends MinecraftAECore implements Tickable {
     public Window window;
     private boolean locked = false;
     private Camera camera;
@@ -40,8 +41,8 @@ public class FirstPersonController extends MinecraftAECore {
 
     public void onMouseMove(double x, double y) {
         if (locked) {
-            camera.yaw += x * 0.01f;
-            camera.pitch -= y * 0.01f;
+            camera.yaw += x * 0.006f;
+            camera.pitch -= y * 0.006f;
             glfwSetCursorPos(window.getWindowHandle(), 0, 0);
 
             camera.yaw %= Math.PI * 2;
@@ -59,5 +60,32 @@ public class FirstPersonController extends MinecraftAECore {
         window.removeMouseButtonChangeCallback(this::onMouseButtonChange);
         window.removeMouseMoveCallback(this::onMouseMove);
         window.removeFocusChangeCallback(this::onFocusChange);
+    }
+
+    @Override
+    public void onTick(double deltaTime) {
+        double speed = 10 * deltaTime;
+        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_W) == GLFW_PRESS) {
+            camera.position.x += Math.cos(camera.yaw) * speed;
+            camera.position.z += Math.sin(camera.yaw) * speed;
+        }
+        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_S) == GLFW_PRESS) {
+            camera.position.x -= Math.cos(camera.yaw) * speed;
+            camera.position.z -= Math.sin(camera.yaw) * speed;
+        }
+        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_A) == GLFW_PRESS) {
+            camera.position.x -= Math.cos(camera.yaw + Math.PI / 2) * speed;
+            camera.position.z -= Math.sin(camera.yaw + Math.PI / 2) * speed;
+        }
+        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_D) == GLFW_PRESS) {
+            camera.position.x += Math.cos(camera.yaw + Math.PI / 2) * speed;
+            camera.position.z += Math.sin(camera.yaw + Math.PI / 2) * speed;
+        }
+        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_SPACE) == GLFW_PRESS) {
+            camera.position.y += speed;
+        }
+        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            camera.position.y -= speed;
+        }
     }
 }

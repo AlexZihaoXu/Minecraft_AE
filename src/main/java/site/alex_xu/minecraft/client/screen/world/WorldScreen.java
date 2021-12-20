@@ -43,6 +43,7 @@ public class WorldScreen extends Screen {
     public void onRender(RenderContext context, double vdt) {
 
         model.resetModelMatrix().getModelMatrix().translate(0, 0, 5).rotateY((float) (glfwGetTime()));
+        firstPersonController.onTick(vdt);
 
         context.getRenderer().clear(0.5f);
         context.getRenderer().get3D()
