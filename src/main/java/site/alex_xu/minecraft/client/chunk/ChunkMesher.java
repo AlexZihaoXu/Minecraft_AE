@@ -1,5 +1,6 @@
 package site.alex_xu.minecraft.client.chunk;
 
+import org.joml.Vector3f;
 import site.alex_xu.minecraft.client.model.Model;
 import site.alex_xu.minecraft.client.model.ModelBuilder;
 import site.alex_xu.minecraft.core.MinecraftAECore;
@@ -29,9 +30,22 @@ public class ChunkMesher extends MinecraftAECore {
             var vv1 = self.vertexMap.get(v1);
             var vv2 = self.vertexMap.get(v2);
             var vv3 = self.vertexMap.get(v3);
-            int a = builder.vertex(vv1.x(), vv1.y(), vv1.z(), 0, 1, 1, 1, 0, 0);
-            int b = builder.vertex(vv2.x(), vv2.y(), vv2.z(), 1, 1, 1, 1, 0, 0);
-            int c = builder.vertex(vv3.x(), vv3.y(), vv3.z(), 1, 1, 1, 1, 0, 0);
+
+            float brightness = 1.0f;
+
+            if (vv1.x() == vv2.x() && vv2.x() == vv3.x()) {
+                brightness = 0.9f;
+            } else if (vv1.z() == vv2.z() && vv2.z() == vv3.z()) {
+                brightness = 0.95f;
+            } else if (vv1.y() == vv2.y() && vv2.y() == vv3.y()) {
+                brightness = vv1.y() > 0.5f ? 1 : 0.85f;
+            } else {
+                brightness = 0.8f;
+            }
+
+            int a = builder.vertex(vv1.x(), vv1.y(), vv1.z(), brightness, brightness, brightness, 1, 0, 0);
+            int b = builder.vertex(vv2.x(), vv2.y(), vv2.z(), brightness, brightness, brightness, 1, 0, 0);
+            int c = builder.vertex(vv3.x(), vv3.y(), vv3.z(), brightness, brightness, brightness, 1, 0, 0);
             builder.addFace(a, b, c);
         }
     }
