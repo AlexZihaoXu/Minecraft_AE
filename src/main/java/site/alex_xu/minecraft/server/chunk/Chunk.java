@@ -29,7 +29,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
         if (block == null)
             block = Blocks.AIR;
         if (block != getBlock(x, y, z)) {
-            blocks[x][z][y] = block;
+            blocks[x][15 - z][y] = block;
             requiresModelUpdate = true;
         }
     }
@@ -37,7 +37,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
     public Block getBlock(int x, int y, int z) {
         if (x >= 16 || x < 0 || y >= 256 || y < 0 || z >= 16 || z < 0)
             return null;
-        Block block = blocks[x][z][y];
+        Block block = blocks[x][15 - z][y];
         return block == null ? Blocks.AIR : block;
     }
 

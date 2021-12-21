@@ -87,5 +87,8 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
         if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
             camera.position.y -= speed;
         }
+        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            setLocked(false);
+        }
     }
 }

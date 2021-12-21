@@ -5,12 +5,14 @@ import site.alex_xu.minecraft.client.chunk.ChunkMesher;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
 import site.alex_xu.minecraft.client.model.Model;
 import site.alex_xu.minecraft.client.model.ModelBuilder;
+import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.chunk.Chunk;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
+import static org.lwjgl.opengl.GL11.*;
 
 public class WorldScreen extends Screen {
 
@@ -49,6 +51,8 @@ public class WorldScreen extends Screen {
         }
         chunk.setBlock(Blocks.GRASS_BLOCK, 0, 0, 1);
         chunk.setBlock(Blocks.STONE, 0, 0, 1);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     @Override
@@ -63,7 +67,10 @@ public class WorldScreen extends Screen {
         firstPersonController.onTick(vdt);
 
         context.getRenderer().clear(0.8f);
+        glDisable(GL_DEPTH_TEST);
         context.getRenderer().get3D()
                 .render(camera, chunkRenderer.getModel());
+        context.getRenderer().get2D()
+                .image(FontTextureAtlas.getInstance().getAtlas(), 0, 0);
     }
 }

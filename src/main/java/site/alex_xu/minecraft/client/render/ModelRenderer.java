@@ -1,7 +1,7 @@
 package site.alex_xu.minecraft.client.render;
 
 import site.alex_xu.minecraft.client.model.Model;
-import site.alex_xu.minecraft.client.resource.TextureAtlas;
+import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
 import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.utils.BindableContext;
 import site.alex_xu.minecraft.client.utils.shader.Shader;
@@ -30,7 +30,7 @@ public class ModelRenderer extends Renderer {
     public void render(Camera camera, Model model) {
         getShader().bind();
         glActiveTexture(GL_TEXTURE0);
-        TextureAtlas.getInstance().getAtlasBuffer().bind();
+        BlockTextureAtlas.getInstance().getAtlasBuffer().bind();
         getShader().setInt("texture0", 0);
         getShader().setMat4("projMat", false, camera.getMatrix(bindableContext));
         getShader().setMat4("modelMat", false, model.getModelMatrix());

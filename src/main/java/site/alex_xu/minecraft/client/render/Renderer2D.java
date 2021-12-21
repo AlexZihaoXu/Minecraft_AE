@@ -55,6 +55,7 @@ public class Renderer2D extends Renderer {
             rectShader.setMat4("transform", false, transform);
             transformChanged = false;
         }
+        glDisable(GL_CULL_FACE);
         rectShader.bind();
     }
 

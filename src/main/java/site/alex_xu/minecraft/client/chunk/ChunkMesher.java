@@ -1,9 +1,8 @@
 package site.alex_xu.minecraft.client.chunk;
 
-import org.joml.Vector3f;
 import site.alex_xu.minecraft.client.model.Model;
 import site.alex_xu.minecraft.client.model.ModelBuilder;
-import site.alex_xu.minecraft.client.resource.TextureAtlas;
+import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
@@ -41,16 +40,16 @@ public class ChunkMesher extends MinecraftAECore {
             int direction = -1;
 
             if (vv1.x() == vv2.x() && vv2.x() == vv3.x()) {
-                brightness = 0.9f;
+                brightness = 0.7f;
                 direction = vv2.x() > 0.5f ? 3 : 2;
             } else if (vv1.z() == vv2.z() && vv2.z() == vv3.z()) {
-                brightness = 0.95f;
+                brightness = 0.8f;
                 direction = vv2.z() > 0.5f ? 1 : 0;
             } else if (vv1.y() == vv2.y() && vv2.y() == vv3.y()) {
-                brightness = vv1.y() > 0.5f ? 1 : 0.85f;
+                brightness = vv1.y() > 0.5f ? 1 : 0.5f;
                 direction = vv2.y() > 0.5f ? 4 : 5;
             } else {
-                brightness = 0.8f;
+                brightness = 0.4f;
             }
 
             boolean canceled = false;
@@ -95,19 +94,20 @@ public class ChunkMesher extends MinecraftAECore {
             }
 
             if (!canceled) {
-                Rectangle2D.Float bound = TextureAtlas.getInstance().getTextureBound(self.texturePathMap.get(face.name()));
+                Rectangle2D.Float bound = BlockTextureAtlas.getInstance().getTextureBound(self.texturePathMap.get(face.name()));
 
 
                 int a = builder.vertex(x + vv1.x(), y + vv1.y(), z + vv1.z(), brightness, brightness, brightness, 1, (float) bound.getMinX(), (float) bound.getMinY());
+                int b;
+                int c;
                 if (firstTriangle) {
-                    int b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, (float) bound.getMinX(), (float) bound.getMaxY());
-                    int c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMaxY());
-                    builder.addFace(a, b, c);
+                    b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, (float) bound.getMinX(), (float) bound.getMaxY());
+                    c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMaxY());
                 } else {
-                    int b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMaxY());
-                    int c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMinY());
-                    builder.addFace(a, b, c);
+                    b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMaxY());
+                    c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMinY());
                 }
+                builder.addFace(a, b, c);
             }
         }
     }

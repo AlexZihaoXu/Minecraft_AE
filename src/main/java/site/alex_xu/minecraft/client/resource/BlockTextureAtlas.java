@@ -11,19 +11,19 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public final class TextureAtlas extends MinecraftAECore {
+public final class BlockTextureAtlas extends MinecraftAECore {
     private final HashMap<String, Texture> pathTextureMap = new HashMap<>();
     private final HashMap<String, Rectangle2D.Float> textureBoundMap = new HashMap<>();
-    private static TextureAtlas instance = null;
+    private static BlockTextureAtlas instance = null;
     private Framebuffer atlasBuffer;
 
-    public static TextureAtlas getInstance() {
+    public static BlockTextureAtlas getInstance() {
         if (instance == null)
-            instance = new TextureAtlas();
+            instance = new BlockTextureAtlas();
         return instance;
     }
 
-    private TextureAtlas() {
+    private BlockTextureAtlas() {
 
     }
 
@@ -61,12 +61,6 @@ public final class TextureAtlas extends MinecraftAECore {
                             texture.getHeight() / (float) atlasHeight
                     )
             );
-            System.out.println(path + " " + new Rectangle2D.Float(
-                    0, 1 - offset / (float) atlasHeight,
-                    texture.getWidth() / (float) atlasWidth,
-                    texture.getHeight() / (float) atlasHeight
-            ));
-
         }
         getLogger().info("Generated texture atlas: " + atlasWidth + "x" + atlasHeight);
 

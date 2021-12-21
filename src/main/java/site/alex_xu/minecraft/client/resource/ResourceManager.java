@@ -17,7 +17,8 @@ public class ResourceManager extends MinecraftAECore {
     }
 
     public void init() {
-        TextureAtlas.getInstance().load();
+        FontTextureAtlas.getInstance().load();
+        BlockTextureAtlas.getInstance().load();
     }
 
     public byte[] readBytesFromResource(String path) {
