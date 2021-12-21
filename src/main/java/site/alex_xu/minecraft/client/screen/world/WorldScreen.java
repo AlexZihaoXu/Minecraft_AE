@@ -43,8 +43,12 @@ public class WorldScreen extends Screen {
             for (int y = 0; y < 16; y++) {
                 if (!(Math.abs(x - 8) < 5 && Math.abs(y - 8) < 5))
                     chunk.setBlock(Blocks.STONE, x, y, 0);
+                else if (!(Math.abs(x - 8) < 3 && Math.abs(y - 8) < 3))
+                    chunk.setBlock(Blocks.GRASS_BLOCK, x, y, 0);
             }
         }
+        chunk.setBlock(Blocks.GRASS_BLOCK, 0, 0, 1);
+        chunk.setBlock(Blocks.STONE, 0, 0, 1);
     }
 
     @Override

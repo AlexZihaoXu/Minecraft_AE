@@ -51,22 +51,22 @@ public final class TextureAtlas extends MinecraftAECore {
         for (String path : paths) {
             Texture texture = getTextureFromPath(path);
             renderer.image(texture, 0, offset);
+            offset += texture.getHeight();
 
             textureBoundMap.put(
                     path,
                     new Rectangle2D.Float(
-                            0, offset / (float) atlasHeight,
+                            0, 1 - offset / (float) atlasHeight,
                             texture.getWidth() / (float) atlasWidth,
                             texture.getHeight() / (float) atlasHeight
                     )
             );
-            System.out.println(new Rectangle2D.Float(
-                    0, offset / (float) atlasHeight,
+            System.out.println(path + " " + new Rectangle2D.Float(
+                    0, 1 - offset / (float) atlasHeight,
                     texture.getWidth() / (float) atlasWidth,
                     texture.getHeight() / (float) atlasHeight
             ));
 
-            offset += texture.getHeight();
         }
         getLogger().info("Generated texture atlas: " + atlasWidth + "x" + atlasHeight);
 
