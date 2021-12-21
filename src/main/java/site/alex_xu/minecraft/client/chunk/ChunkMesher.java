@@ -3,11 +3,14 @@ package site.alex_xu.minecraft.client.chunk;
 import org.joml.Vector3f;
 import site.alex_xu.minecraft.client.model.Model;
 import site.alex_xu.minecraft.client.model.ModelBuilder;
+import site.alex_xu.minecraft.client.resource.TextureAtlas;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.chunk.Chunk;
 import site.alex_xu.minecraft.server.models.BlockModelDef;
+
+import java.awt.geom.Rectangle2D;
 
 public class ChunkMesher extends MinecraftAECore {
     protected Chunk chunk;
@@ -20,13 +23,16 @@ public class ChunkMesher extends MinecraftAECore {
     protected abstract static class BlockModelApplier extends BlockModelDef {
         public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, Chunk chunk) {
             for (Face face : self.faceMap.values()) {
-                applyTriangle(self, face.v1(), face.v2(), face.v3(), builder, x, y, z, chunk);
-                applyTriangle(self, face.v1(), face.v3(), face.v4(), builder, x, y, z, chunk);
+                applyTriangle(self, face, builder, x, y, z, chunk, true);
+                applyTriangle(self, face, builder, x, y, z, chunk, false);
             }
 
         }
 
-        private static void applyTriangle(BlockModelDef self, int v1, int v2, int v3, ModelBuilder builder, int x, int y, int z, Chunk chunk) {
+        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, Chunk chunk, boolean firstTriangle) {
+            var v1 = face.v1();
+            var v2 = firstTriangle ? face.v2() : face.v3();
+            var v3 = firstTriangle ? face.v3() : face.v4();
             var vv1 = self.vertexMap.get(v1);
             var vv2 = self.vertexMap.get(v2);
             var vv3 = self.vertexMap.get(v3);
@@ -89,10 +95,19 @@ public class ChunkMesher extends MinecraftAECore {
             }
 
             if (!canceled) {
-                int a = builder.vertex(x + vv1.x(), y + vv1.y(), z + vv1.z(), brightness, brightness, brightness, 1, 0, 0);
-                int b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, 0, 0);
-                int c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, 0, 0);
-                builder.addFace(a, b, c);
+                Rectangle2D.Float bound = TextureAtlas.getInstance().getTextureBound(self.texturePathMap.get(face.name()));
+
+
+                int a = builder.vertex(x + vv1.x(), y + vv1.y(), z + vv1.z(), brightness, brightness, brightness, 1, (float) bound.getMinX(), (float) bound.getMinY());
+                if (firstTriangle) {
+                    int b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, (float) bound.getMinX(), (float) bound.getMaxY());
+                    int c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMaxY());
+                    builder.addFace(a, b, c);
+                } else {
+                    int b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMaxY());
+                    int c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, (float) bound.getMaxX(), (float) bound.getMinY());
+                    builder.addFace(a, b, c);
+                }
             }
         }
     }

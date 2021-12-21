@@ -56,6 +56,7 @@ public class MinecraftClient extends MinecraftAECore {
 
     // Events
     public void onSetup() {
+        ResourceManager.getInstance().init();
         getScreenManager().pushScreen(new WorldScreen());
 
 

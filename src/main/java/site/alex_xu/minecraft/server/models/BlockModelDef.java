@@ -9,7 +9,7 @@ public class BlockModelDef extends MinecraftAECore {
     protected record Vertex(float x, float y, float z) {
     }
 
-    protected record Face(int v1, int v2, int v3, int v4) {
+    protected record Face(String name, int v1, int v2, int v3, int v4) {
     }
 
     public HashMap<Integer, Vertex> vertexMap = new HashMap<>();
@@ -25,7 +25,7 @@ public class BlockModelDef extends MinecraftAECore {
     }
 
     public BlockModelDef face(String name, int v1, int v2, int v3, int v4) {
-        faceMap.put(name, new Face(v1, v2, v3, v4));
+        faceMap.put(name, new Face(name, v1, v2, v3, v4));
         return this;
     }
 

@@ -8,7 +8,7 @@ import site.alex_xu.minecraft.server.models.CubeAllModel;
 import java.util.HashMap;
 
 public class Blocks extends MinecraftAECore {
-    protected static HashMap<String, Block> blocks = new HashMap<>();
+    public static HashMap<String, Block> blocks = new HashMap<>();
 
     public static Block register(String name, Block block) {
         blocks.put(name, block);
