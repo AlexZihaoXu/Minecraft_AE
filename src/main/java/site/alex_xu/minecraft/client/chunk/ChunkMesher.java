@@ -18,35 +18,82 @@ public class ChunkMesher extends MinecraftAECore {
     }
 
     protected abstract static class BlockModelApplier extends BlockModelDef {
-        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z) {
+        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, Chunk chunk) {
             for (Face face : self.faceMap.values()) {
-                applyTriangle(self, face.v1(), face.v2(), face.v3(), builder, x, y, z);
-                applyTriangle(self, face.v1(), face.v3(), face.v4(), builder, x, y, z);
+                applyTriangle(self, face.v1(), face.v2(), face.v3(), builder, x, y, z, chunk);
+                applyTriangle(self, face.v1(), face.v3(), face.v4(), builder, x, y, z, chunk);
             }
 
         }
 
-        private static void applyTriangle(BlockModelDef self, int v1, int v2, int v3, ModelBuilder builder, int x, int y, int z) {
+        private static void applyTriangle(BlockModelDef self, int v1, int v2, int v3, ModelBuilder builder, int x, int y, int z, Chunk chunk) {
             var vv1 = self.vertexMap.get(v1);
             var vv2 = self.vertexMap.get(v2);
             var vv3 = self.vertexMap.get(v3);
 
-            float brightness = 1.0f;
+            float brightness;
+            int direction = -1;
 
             if (vv1.x() == vv2.x() && vv2.x() == vv3.x()) {
                 brightness = 0.9f;
+                direction = vv2.x() > 0.5f ? 3 : 2;
             } else if (vv1.z() == vv2.z() && vv2.z() == vv3.z()) {
                 brightness = 0.95f;
+                direction = vv2.z() > 0.5f ? 1 : 0;
             } else if (vv1.y() == vv2.y() && vv2.y() == vv3.y()) {
                 brightness = vv1.y() > 0.5f ? 1 : 0.85f;
+                direction = vv2.y() > 0.5f ? 4 : 5;
             } else {
                 brightness = 0.8f;
             }
 
-            int a = builder.vertex(vv1.x(), vv1.y(), vv1.z(), brightness, brightness, brightness, 1, 0, 0);
-            int b = builder.vertex(vv2.x(), vv2.y(), vv2.z(), brightness, brightness, brightness, 1, 0, 0);
-            int c = builder.vertex(vv3.x(), vv3.y(), vv3.z(), brightness, brightness, brightness, 1, 0, 0);
-            builder.addFace(a, b, c);
+            boolean canceled = false;
+            if (direction != -1) {
+                if (direction == 0) { // North
+                    Block block = chunk.getBlock(x, y, z - 1);
+                    block = block == null ? Blocks.AIR : block;
+                    if (block.settings().opaque) {
+                        canceled = true;
+                    }
+                } else if (direction == 1) { // South
+                    Block block = chunk.getBlock(x, y, z + 1);
+                    block = block == null ? Blocks.AIR : block;
+                    if (block.settings().opaque) {
+                        canceled = true;
+                    }
+                } else if (direction == 2) { // West
+                    Block block = chunk.getBlock(x - 1, y, z);
+                    block = block == null ? Blocks.AIR : block;
+                    if (block.settings().opaque) {
+                        canceled = true;
+                    }
+                } else if (direction == 3) { // East
+                    Block block = chunk.getBlock(x + 1, y, z);
+                    block = block == null ? Blocks.AIR : block;
+                    if (block.settings().opaque) {
+                        canceled = true;
+                    }
+                } else if (direction == 4) { // Top
+                    Block block = chunk.getBlock(x, y + 1, z);
+                    block = block == null ? Blocks.AIR : block;
+                    if (block.settings().opaque) {
+                        canceled = true;
+                    }
+                } else { // Bottom
+                    Block block = chunk.getBlock(x, y - 1, z);
+                    block = block == null ? Blocks.AIR : block;
+                    if (block.settings().opaque) {
+                        canceled = true;
+                    }
+                }
+            }
+
+            if (!canceled) {
+                int a = builder.vertex(x + vv1.x(), y + vv1.y(), z + vv1.z(), brightness, brightness, brightness, 1, 0, 0);
+                int b = builder.vertex(x + vv2.x(), y + vv2.y(), z + vv2.z(), brightness, brightness, brightness, 1, 0, 0);
+                int c = builder.vertex(x + vv3.x(), y + vv3.y(), z + vv3.z(), brightness, brightness, brightness, 1, 0, 0);
+                builder.addFace(a, b, c);
+            }
         }
     }
 
@@ -66,7 +113,7 @@ public class ChunkMesher extends MinecraftAECore {
                 for (int y = 0; y < 256; y++) {
                     Block block = chunk.getBlock(x, y, z);
                     if (block == Blocks.AIR) continue;
-                    BlockModelApplier.apply(block.modelDef(), builder, x, y, z);
+                    BlockModelApplier.apply(block.modelDef(), builder, x, y, z, chunk);
                 }
             }
         }

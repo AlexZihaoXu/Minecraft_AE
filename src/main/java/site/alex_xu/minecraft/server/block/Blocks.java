@@ -16,6 +16,6 @@ public class Blocks extends MinecraftAECore {
     }
 
     // Blocks
-    public static final Block AIR = register("air", new Block(BlockSettings.of(Material.AIR), null));
-    public static final Block STONE = register("grass_block", new Block(BlockSettings.of(Material.STONE), new CubeAllModel().setAllTextures("assets/textures/blocks/stone.png")));
+    public static final Block AIR = register("air", new Block(BlockSettings.of(Material.AIR).opaque(false), null));
+    public static final Block STONE = register("grass_block", new Block(BlockSettings.of(Material.STONE).opaque(true), new CubeAllModel().setAllTextures("assets/textures/blocks/stone.png")));
 }

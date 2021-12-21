@@ -41,12 +41,12 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
 
     public void onMouseMove(double x, double y) {
         if (locked) {
-            camera.yaw += x * 0.006f;
-            camera.pitch -= y * 0.006f;
+            camera.yaw += x * 0.004f;
+            camera.pitch -= y * 0.004f;
             glfwSetCursorPos(window.getWindowHandle(), 0, 0);
 
             camera.yaw %= Math.PI * 2;
-            camera.pitch = Math.min(Math.PI / 2, Math.max(-Math.PI / 2, camera.pitch));
+            camera.pitch = Math.min(Math.PI / 2 - 1 / 1e5, Math.max(-Math.PI / 2 + 1 / 1e5, camera.pitch));
         }
     }
 

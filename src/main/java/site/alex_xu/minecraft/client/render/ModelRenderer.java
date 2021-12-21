@@ -31,6 +31,8 @@ public class ModelRenderer extends Renderer {
         getShader().setMat4("modelMat", false, model.getModelMatrix());
 
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CW);
         model.draw();
     }
 }

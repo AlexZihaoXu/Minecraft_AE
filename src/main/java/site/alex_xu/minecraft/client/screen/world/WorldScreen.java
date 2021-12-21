@@ -39,7 +39,12 @@ public class WorldScreen extends Screen {
 
         chunk = new Chunk();
         chunkRenderer = new ChunkMesher(chunk);
-        chunk.setBlock(Blocks.STONE, 0, 0, 0);
+        for (int x = 0; x < 16; x++) {
+            for (int y = 0; y < 16; y++) {
+                if (!(Math.abs(x - 8) < 5 && Math.abs(y - 8) < 5))
+                    chunk.setBlock(Blocks.STONE, x, y, 0);
+            }
+        }
     }
 
     @Override
@@ -49,7 +54,7 @@ public class WorldScreen extends Screen {
 
     @Override
     public void onRender(RenderContext context, double vdt) {
-
+        chunk.onTick(vdt);
         model.resetModelMatrix().getModelMatrix().translate(0, 0, 5).rotateY((float) (glfwGetTime()));
         firstPersonController.onTick(vdt);
 
