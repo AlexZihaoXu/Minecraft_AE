@@ -1,12 +1,14 @@
 package site.alex_xu.minecraft.client.screen.world;
 
 import site.alex_xu.minecraft.client.MinecraftClient;
+import site.alex_xu.minecraft.client.chunk.ChunkMesher;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
 import site.alex_xu.minecraft.client.model.Model;
 import site.alex_xu.minecraft.client.model.ModelBuilder;
 import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
-import site.alex_xu.minecraft.client.utils.shader.Shader;
+import site.alex_xu.minecraft.server.block.Blocks;
+import site.alex_xu.minecraft.server.chunk.Chunk;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
@@ -15,6 +17,8 @@ public class WorldScreen extends Screen {
 
     protected Camera camera = new Camera();
     protected FirstPersonController firstPersonController;
+    protected Chunk chunk;
+    protected ChunkMesher chunkRenderer;
 
     public Camera getCamera() {
         return camera;
@@ -32,6 +36,10 @@ public class WorldScreen extends Screen {
         model = builder.build();
         firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera);
         camera.yaw = Math.PI / 2;
+
+        chunk = new Chunk();
+        chunkRenderer = new ChunkMesher(chunk);
+        chunk.setBlock(Blocks.STONE, 0, 0, 0);
     }
 
     @Override
@@ -47,6 +55,6 @@ public class WorldScreen extends Screen {
 
         context.getRenderer().clear(0.5f);
         context.getRenderer().get3D()
-                .render(camera, model);
+                .render(camera, chunkRenderer.getModel());
     }
 }

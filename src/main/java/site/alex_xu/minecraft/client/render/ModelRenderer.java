@@ -5,7 +5,7 @@ import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.utils.BindableContext;
 import site.alex_xu.minecraft.client.utils.shader.Shader;
 
-import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.*;
 
 public class ModelRenderer extends Renderer {
     private static Shader shader;
@@ -30,6 +30,7 @@ public class ModelRenderer extends Renderer {
         getShader().setMat4("projMat", false, camera.getMatrix(bindableContext));
         getShader().setMat4("modelMat", false, model.getModelMatrix());
 
+        glEnable(GL_DEPTH_TEST);
         model.draw();
     }
 }

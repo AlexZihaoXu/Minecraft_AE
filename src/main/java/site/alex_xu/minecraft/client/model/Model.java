@@ -40,4 +40,10 @@ public class Model extends MinecraftAECore {
         ebo.bind();
         glDrawElements(GL_TRIANGLES, ebo.length(), GL_UNSIGNED_INT, 0);
     }
+
+    public void free() {
+        this.vao.free();
+        this.vbo.free();
+        this.ebo.free();
+    }
 }

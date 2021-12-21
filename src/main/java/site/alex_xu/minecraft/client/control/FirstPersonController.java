@@ -10,7 +10,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class FirstPersonController extends MinecraftAECore implements Tickable {
     public Window window;
     private boolean locked = false;
-    private Camera camera;
+    private final Camera camera;
 
     public FirstPersonController(Window window, Camera camera) {
         this.window = window;

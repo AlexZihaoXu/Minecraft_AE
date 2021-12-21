@@ -13,6 +13,7 @@ import site.alex_xu.minecraft.client.resource.ResourceManager;
 import site.alex_xu.minecraft.core.Initializer;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.core.Minecraft;
+import site.alex_xu.minecraft.server.material.Material;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -56,6 +57,7 @@ public class MinecraftClient extends MinecraftAECore {
     // Events
     public void onSetup() {
         getScreenManager().pushScreen(new WorldScreen());
+
 
     }
 
