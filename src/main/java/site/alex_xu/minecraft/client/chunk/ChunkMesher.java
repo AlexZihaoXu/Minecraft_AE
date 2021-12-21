@@ -55,37 +55,37 @@ public class ChunkMesher extends MinecraftAECore {
             boolean canceled = false;
             if (direction != -1) {
                 if (direction == 0) { // North
-                    Block block = chunk.getBlock(x, y, z - 1);
+                    Block block = chunk.getBlock(x, y, 15 - (z - 1));
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 1) { // South
-                    Block block = chunk.getBlock(x, y, z + 1);
+                    Block block = chunk.getBlock(x, y, 15 - (z + 1));
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 2) { // West
-                    Block block = chunk.getBlock(x - 1, y, z);
+                    Block block = chunk.getBlock(x - 1, y, 15 - z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 3) { // East
-                    Block block = chunk.getBlock(x + 1, y, z);
+                    Block block = chunk.getBlock(x + 1, y, 15 - z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 4) { // Top
-                    Block block = chunk.getBlock(x, y + 1, z);
+                    Block block = chunk.getBlock(x, y + 1, 15 - z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else { // Bottom
-                    Block block = chunk.getBlock(x, y - 1, z);
+                    Block block = chunk.getBlock(x, y - 1, 15 - z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
@@ -126,7 +126,7 @@ public class ChunkMesher extends MinecraftAECore {
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 for (int y = 0; y < 256; y++) {
-                    Block block = chunk.getBlock(x, y, z);
+                    Block block = chunk.getBlock(x, y, 15 - z);
                     if (block == Blocks.AIR) continue;
                     BlockModelApplier.apply(block.modelDef(), builder, x, y, z, chunk);
                 }

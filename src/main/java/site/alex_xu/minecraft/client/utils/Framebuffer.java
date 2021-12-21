@@ -11,7 +11,6 @@ import static org.lwjgl.opengl.GL30.*;
 public class Framebuffer extends ImageType implements BindableContext {
 
     private final int frameBufferID;
-    private final int renderBufferID;
 
     public Framebuffer(int width, int height) {
         this.width = width;
@@ -27,15 +26,10 @@ public class Framebuffer extends ImageType implements BindableContext {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-
-        renderBufferID = glGenRenderbuffers();
-        glBindRenderbuffer(GL_RENDERBUFFER, renderBufferID);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBufferID);
-
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureID, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            System.out.println(glCheckFramebufferStatus(GL_FRAMEBUFFER));
             throw new IllegalStateException("Unable to create frame buffer!");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -63,6 +57,5 @@ public class Framebuffer extends ImageType implements BindableContext {
     public void onDispose() {
         glDeleteTextures(textureID);
         glDeleteFramebuffers(frameBufferID);
-        glDeleteBuffers(renderBufferID);
     }
 }
