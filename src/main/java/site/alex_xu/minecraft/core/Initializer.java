@@ -45,6 +45,7 @@ public final class Initializer extends MinecraftAECore {
         }
 
         // Show Version Information
+        getLogger().info("Architecture: " + System.getProperty("os.arch"));
         getLogger().info("LWJGL Version: " + org.lwjgl.Version.getVersion());
         getLogger().info("GLFW Version: " + glfwGetVersionString());
 
