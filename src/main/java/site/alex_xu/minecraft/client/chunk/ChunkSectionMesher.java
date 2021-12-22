@@ -6,13 +6,13 @@ import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
-import site.alex_xu.minecraft.server.chunk.Chunk;
+import site.alex_xu.minecraft.server.chunk.ChunkSection;
 import site.alex_xu.minecraft.server.models.BlockModelDef;
 
 import java.awt.geom.Rectangle2D;
 
-public class ChunkMesher extends MinecraftAECore {
-    protected Chunk chunk;
+public class ChunkSectionMesher extends MinecraftAECore {
+    protected ChunkSection chunk;
     protected Model mesh = null;
 
     public Model getModel() {
@@ -20,7 +20,7 @@ public class ChunkMesher extends MinecraftAECore {
     }
 
     protected abstract static class BlockModelApplier extends BlockModelDef {
-        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, Chunk chunk) {
+        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, ChunkSection chunk) {
             for (Face face : self.faceMap.values()) {
                 applyTriangle(self, face, builder, x, y, z, chunk, true);
                 applyTriangle(self, face, builder, x, y, z, chunk, false);
@@ -28,7 +28,7 @@ public class ChunkMesher extends MinecraftAECore {
 
         }
 
-        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, Chunk chunk, boolean firstTriangle) {
+        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, ChunkSection chunk, boolean firstTriangle) {
             var v1 = face.v1();
             var v2 = firstTriangle ? face.v2() : face.v3();
             var v3 = firstTriangle ? face.v3() : face.v4();
@@ -112,12 +112,13 @@ public class ChunkMesher extends MinecraftAECore {
         }
     }
 
-    public ChunkMesher(Chunk chunk) {
+    public ChunkSectionMesher(ChunkSection chunk) {
         this.chunk = chunk;
         chunk.registerChunkModelUpdateCallback(this::updateMesh);
     }
 
-    public void updateMesh(Chunk chunk) {
+    public void updateMesh(ChunkSection chunk) {
+        long beginTime = System.nanoTime();
         ModelBuilder builder = new ModelBuilder();
         if (mesh != null) {
             mesh.free();
@@ -125,13 +126,14 @@ public class ChunkMesher extends MinecraftAECore {
 
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
-                for (int y = 0; y < 256; y++) {
+                for (int y = 0; y < 16; y++) {
                     Block block = chunk.getBlock(x, y, 15 - z);
                     if (block == Blocks.AIR) continue;
                     BlockModelApplier.apply(block.modelDef(), builder, x, y, z, chunk);
                 }
             }
         }
+        System.out.println(System.nanoTime() - beginTime);
         mesh = builder.build();
     }
 

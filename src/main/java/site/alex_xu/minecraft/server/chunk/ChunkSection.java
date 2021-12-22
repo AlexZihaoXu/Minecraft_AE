@@ -8,8 +8,8 @@ import site.alex_xu.minecraft.server.block.Blocks;
 import javax.security.auth.callback.Callback;
 import java.util.HashSet;
 
-public class Chunk extends MinecraftAECore implements Tickable {
-    private final Block[][][] blocks = new Block[16][16][256];
+public class ChunkSection extends MinecraftAECore implements Tickable {
+    private final Block[][][] blocks = new Block[16][16][16];
     private final HashSet<ChunkModelUpdateCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
     private boolean requiresModelUpdate = false;
 
@@ -21,7 +21,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
         chunkModelUpdateCallbackIs.remove(chunkModelUpdateCallbackI);
     }
 
-    public Chunk() {
+    public ChunkSection() {
 
     }
 
@@ -35,7 +35,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
     }
 
     public Block getBlock(int x, int y, int z) {
-        if (x >= 16 || x < 0 || y >= 256 || y < 0 || z >= 16 || z < 0)
+        if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0)
             return null;
         Block block = blocks[x][15 - z][y];
         return block == null ? Blocks.AIR : block;
@@ -56,6 +56,6 @@ public class Chunk extends MinecraftAECore implements Tickable {
     }
 
     public interface ChunkModelUpdateCallbackI extends Callback {
-        void execute(Chunk chunk);
+        void execute(ChunkSection chunk);
     }
 }
