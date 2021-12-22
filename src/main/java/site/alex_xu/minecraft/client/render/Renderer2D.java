@@ -1,6 +1,7 @@
 package site.alex_xu.minecraft.client.render;
 
 import org.joml.Matrix4f;
+import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.utils.BindableContext;
 import site.alex_xu.minecraft.client.utils.ImageType;
 import site.alex_xu.minecraft.client.utils.buffers.ElementBuffer;
@@ -16,8 +17,12 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class Renderer2D extends Renderer {
-    private final static int DRAW_MODE_SHAPE = 0;
-    private final static int DRAW_MODE_IMAGE = 1;
+    private static final int DRAW_MODE_SHAPE = 0;
+    private static final int DRAW_MODE_IMAGE = 1;
+    private static final int DRAW_MODE_TEXT = 2;
+    public static final int BACKGROUND_NONE = 0;
+    public static final int BACKGROUND_SHADOW = 1;
+    public static final int BACKGROUND_FILL = 2;
     private static Shader rectShader = null;
     private static VertexArray rectVAO = null;
     private static VertexBuffer rectVBO = null;
@@ -194,11 +199,50 @@ public class Renderer2D extends Renderer {
         return this;
     }
 
-    public void image(ImageType image, float srcX, float srcY, float srcW, float srcH, float dstX, float dstY) {
-        image(image, srcX, srcY, srcW, srcH, dstX, dstY, srcW, srcH);
+    public Renderer2D image(ImageType image, float srcX, float srcY, float srcW, float srcH, float dstX, float dstY) {
+        return image(image, srcX, srcY, srcW, srcH, dstX, dstY, srcW, srcH);
     }
 
-    public void image(ImageType image, float x, float y) {
-        image(image, 0, 0, image.getWidth(), image.getHeight(), x, y, image.getWidth(), image.getHeight());
+    public Renderer2D image(ImageType image, float x, float y) {
+        return image(image, 0, 0, image.getWidth(), image.getHeight(), x, y, image.getWidth(), image.getHeight());
+    }
+
+    public void text(String text, float x, float y, int background) {
+        prepareRendering();
+        int offset = 0;
+        rectShader.setVec4("color", r, g, b, a);
+        rectShader.setInt("drawMode", DRAW_MODE_TEXT);
+        rectShader.setInt("texture0", 0);
+        rectShader.setFloat("texWidth", FontTextureAtlas.getInstance().getAtlas().getWidth());
+        rectShader.setFloat("texHeight", FontTextureAtlas.getInstance().getAtlas().getHeight());
+        rectShader.setInt("background", background);
+        glActiveTexture(GL_TEXTURE0);
+        FontTextureAtlas.getInstance().getAtlas().bind();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        rectVAO.bind();
+        rectEBO.bind();
+
+        for (int i = 0; i < text.length(); i++) {
+            var bound = FontTextureAtlas.getInstance().getBoundOf(text.charAt(i));
+
+            rectShader.setVec4("rect", x + offset, y, (float) bound.getWidth() + 3, (float) bound.getHeight());
+            rectShader.setVec4("srcRect", (float) bound.getX(), (float) bound.getY() + 3, (float) bound.getWidth() + 3, (float) bound.getHeight());
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            offset += bound.getWidth();
+        }
+
+    }
+
+    public int getTextWidth(String text) {
+        int width = 0;
+        for (int i = 0; i < text.length(); i++) {
+            width += FontTextureAtlas.getInstance().getBoundOf(text.charAt(i)).getWidth();
+        }
+        return width;
+    }
+
+    public int getTextHeight() {
+        return FontTextureAtlas.FONT_LINE_HEIGHT;
     }
 }

@@ -17,6 +17,9 @@ import java.util.*;
 
 public class FontTextureAtlas extends MinecraftAECore {
     private static FontTextureAtlas instance = null;
+    public static final int FONT_SIZE = 24;
+    public static final int FONT_LINE_HEIGHT = FONT_SIZE + 5;
+    private TreeMap<Integer, Rectangle2D> boundMap = new TreeMap<>();
     private Texture atlas;
 
     public static FontTextureAtlas getInstance() {
@@ -30,9 +33,8 @@ public class FontTextureAtlas extends MinecraftAECore {
 
     void load() {
         try {
-            int FONTSIZE = 32;
             Font font = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(ResourceManager.class.getClassLoader().getResourceAsStream("assets/fonts/Minecraftia.ttf")))
-                    .deriveFont((float) FONTSIZE);
+                    .deriveFont((float) FONT_SIZE);
 
             TreeMap<Integer, Rectangle2D> displayableBoundMap = new TreeMap<>();
             ArrayList<Integer> displayables = new ArrayList<>();
@@ -41,16 +43,16 @@ public class FontTextureAtlas extends MinecraftAECore {
             FontRenderContext frc = new FontRenderContext(affinetransform, true, true);
 
             int maxWidth = 0;
-            int maxHeight = 0;
             for (int i = 0; i < Character.MAX_VALUE; i++) {
                 if (font.canDisplay(i)) {
                     var bound = font.getStringBounds("" + (char) (i), frc);
                     maxWidth = (int) Math.max(bound.getWidth(), maxWidth);
-                    maxHeight = (int) Math.max(bound.getHeight(), maxHeight);
                     displayableBoundMap.put(i, bound);
                     displayables.add(i);
                 }
             }
+            maxWidth += 3;
+            int maxHeight = FONT_LINE_HEIGHT + 6;
 
             int sideLength = (int) Math.ceil(Math.sqrt(displayableBoundMap.size()));
             int bImageWidth = sideLength * maxWidth;
@@ -67,6 +69,10 @@ public class FontTextureAtlas extends MinecraftAECore {
                     }
                     char c = (char) (displayables.get(index).intValue());
                     g.drawString(String.valueOf(c), x * maxWidth, (y + 1) * maxHeight);
+                    boundMap.put(displayables.get(index), new Rectangle(
+                            x * maxWidth, (y) * maxHeight + 3,
+                            (int) displayableBoundMap.get(displayables.get(index)).getWidth(), maxHeight - 3
+                    ));
                     index++;
                 }
                 if (index >= displayables.size())
@@ -84,6 +90,10 @@ public class FontTextureAtlas extends MinecraftAECore {
             e.printStackTrace();
             throw new IllegalStateException("Unable to load fonts!");
         }
+    }
+
+    public Rectangle2D getBoundOf(char c) {
+        return boundMap.get((int) c);
     }
 
     public Texture getAtlas() {

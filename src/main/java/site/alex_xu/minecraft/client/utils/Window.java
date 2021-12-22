@@ -22,11 +22,13 @@ public class Window extends RenderContext {
     private final HashSet<_OnMouseButtonChangeCallbackI> mouseButtonChangeCallbacks = new HashSet<>();
     private final HashSet<_OnMouseMoveCallbackI> mouseMoveCallbacks = new HashSet<>();
     private final HashSet<_OnFocusChangeCallbackI> focusChangeCallbacks = new HashSet<>();
+    private final HashSet<_OnKeyChangeCallbackI> keyChangeCallbacks = new HashSet<>();
     private final String title;
     private final ReentrantLock windowThreadLock = new ReentrantLock();
     private long windowHandle;
     private boolean vsyncEnabled = false;
 
+    // Register Events
     public void registerMouseButtonChangeCallback(_OnMouseButtonChangeCallbackI callback) {
         mouseButtonChangeCallbacks.add(callback);
     }
@@ -50,6 +52,16 @@ public class Window extends RenderContext {
     public void removeFocusChangeCallback(_OnFocusChangeCallbackI focusChangeCallback) {
         focusChangeCallbacks.remove(focusChangeCallback);
     }
+
+    public void registerKeyChangeCallback(_OnKeyChangeCallbackI keyChangeCallback) {
+        keyChangeCallbacks.add(keyChangeCallback);
+    }
+
+    public void removeKeyChangeCallback(_OnKeyChangeCallbackI keyChangeCallback) {
+        keyChangeCallbacks.remove(keyChangeCallback);
+    }
+
+    //
 
     public Window(_OnSetupCallbackI setupCallback, _OnDisposeCallbackI onDisposeCallback, _OnRenderCallbackI renderCallback, String title, int width, int height) {
 
@@ -139,7 +151,9 @@ public class Window extends RenderContext {
     }
 
     public void onKeyChange(long window, int key, int scancode, int action, int mods) {
-
+        for (_OnKeyChangeCallbackI keyChangeCallback : keyChangeCallbacks) {
+            keyChangeCallback.execute(window, key, scancode, action, mods);
+        }
     }
 
     public void onDispose() {
@@ -226,5 +240,9 @@ public class Window extends RenderContext {
 
     public interface _OnFocusChangeCallbackI extends Callback {
         void execute(boolean focused);
+    }
+
+    public interface _OnKeyChangeCallbackI extends Callback {
+        void execute(long window, int key, int scancode, int action, int mods);
     }
 }
