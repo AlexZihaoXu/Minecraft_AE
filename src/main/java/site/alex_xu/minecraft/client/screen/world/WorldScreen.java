@@ -8,11 +8,13 @@ import site.alex_xu.minecraft.client.render.Renderer2D;
 import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
+import site.alex_xu.minecraft.client.world.WorldRenderer;
 import site.alex_xu.minecraft.core.Minecraft;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.chunk.Chunk;
 import site.alex_xu.minecraft.server.chunk.ChunkSection;
+import site.alex_xu.minecraft.server.world.World;
 
 import java.util.ArrayList;
 
@@ -35,14 +37,15 @@ public class WorldScreen extends Screen {
     }
 
 
-    public Chunk chunk = new Chunk();
-    public ChunkRenderer chunkRenderer;
+    public World world;
+    public WorldRenderer worldRenderer;
 
     @Override
     public void onSetup() {
         firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera);
         camera.yaw = Math.PI / 2;
-        chunkRenderer = new ChunkRenderer(chunk);
+        world = new World();
+        worldRenderer = new WorldRenderer(world);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -51,10 +54,10 @@ public class WorldScreen extends Screen {
 
         var blocks = new ArrayList<>(Blocks.blocks.values());
 
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
+        for (int x = 0; x < 24; x++) {
+            for (int z = 0; z < 24; z++) {
                 for (int y = 0; y < 256; y++) {
-                    chunk.setBlock(blocks.get((int) (Math.random() * blocks.size())), x, y, z);
+                    world.setBlock(blocks.get(1), x, y, z);
                 }
             }
         }
@@ -75,7 +78,7 @@ public class WorldScreen extends Screen {
 
     @Override
     public void onRender(RenderContext context, double vdt) {
-        chunk.onTick(vdt);
+        world.onTick(vdt);
         firstPersonController.onTick(vdt);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -89,7 +92,7 @@ public class WorldScreen extends Screen {
         frameCount++;
 
         context.getRenderer().clear(0.8f);
-        chunkRenderer.render(context.getRenderer().get3D(), getCamera());
+        worldRenderer.render(context.getRenderer().get3D(), getCamera());
 
         glDisable(GL_DEPTH_TEST);
         if (showDebugInformation) {

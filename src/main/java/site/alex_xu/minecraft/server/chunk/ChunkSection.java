@@ -26,13 +26,23 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     public ChunkSection(Chunk chunk, int sectionY) {
         this.chunk = chunk;
         this.sectionY = sectionY;
-        if (chunk.hasSection(sectionY + 1)) {
+        if (chunk.hasSection(sectionY + 1)) { // TOP
             chunk.getOrCreateChunkSection(sectionY + 1).requiresModelUpdate = true;
-            System.out.println("re-meshing" + (sectionY + 1));
         }
-        if (chunk.hasSection(sectionY - 1)) {
+        if (chunk.hasSection(sectionY - 1)) { // BOTTOM
             chunk.getOrCreateChunkSection(sectionY - 1).requiresModelUpdate = true;
-            System.out.println("re-meshing" + (sectionY - 1));
+        }
+        if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() - 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).hasSection(sectionY)) { // North
+            chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+        }
+        if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() + 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).hasSection(sectionY)) { // South
+            chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+        }
+        if (chunk.getWorld().hasChunk(chunk.getX() - 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).hasSection(sectionY)) { // West
+            chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+        }
+        if (chunk.getWorld().hasChunk(chunk.getX() + 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).hasSection(sectionY)) { // West
+            chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
         }
     }
 
