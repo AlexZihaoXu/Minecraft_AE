@@ -54,9 +54,9 @@ public class WorldScreen extends Screen {
 
         var blocks = new ArrayList<>(Blocks.blocks.values());
 
-        for (int x = 0; x < 24; x++) {
-            for (int z = 0; z < 24; z++) {
-                for (int y = 0; y < 256; y++) {
+        for (int x = 0; x < 200; x++) {
+            for (int z = 0; z < 200; z++) {
+                for (int y = 0; y < 3; y++) {
                     world.setBlock(blocks.get(1), x, y, z);
                 }
             }

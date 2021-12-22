@@ -2,6 +2,7 @@ package site.alex_xu.minecraft.server.world;
 
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
+import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.chunk.Chunk;
 
 import javax.security.auth.callback.Callback;
@@ -20,7 +21,14 @@ public class World extends MinecraftAECore {
     }
 
     public void setBlock(Block block, int x, int y, int z) {
-        getOrCreateChunk(x / 16, z / 16).setBlock(block, ((x % 16) + 16) % 16, y, (((15 - z) % 16) + 16) % 16);
+        getOrCreateChunk(x / 16, z / 16).setBlock(block, Math.floorMod(x, 16), y, Math.floorMod(15-z, 16));
+    }
+
+    public Block getBlock(int x, int y, int z) {
+        if (hasChunk(x / 16, z / 16)) {
+            getOrCreateChunk(x / 16, z / 16).getBlock(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
+        }
+        return Blocks.AIR;
     }
 
     public record ChunkPos(int x, int y) implements Comparable<ChunkPos> {
@@ -61,6 +69,7 @@ public class World extends MinecraftAECore {
             }
         }
     }
+
 
     private final TreeMap<ChunkPos, Chunk> chunks = new TreeMap<>();
 

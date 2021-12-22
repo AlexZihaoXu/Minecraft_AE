@@ -46,7 +46,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
         if (sections[sectionY] == null) {
             return Blocks.AIR;
         }
-        return sections[sectionY].getBlock(x, y % 16, z);
+        return sections[sectionY].getBlock(x, Math.floorMod(y, 16), z);
     }
 
     public ChunkSection getOrCreateChunkSection(int sectionY) {
@@ -61,7 +61,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
 
     public void setBlock(Block block, int x, int y, int z) {
         int sectionY = y / sections.length;
-        getOrCreateChunkSection(sectionY).setBlock(block, x, y % 16, z);
+        getOrCreateChunkSection(sectionY).setBlock(block, x, Math.floorMod(y, 16), z);
     }
 
     @Override
