@@ -18,6 +18,7 @@ public final class Initializer extends MinecraftAECore {
     }
 
     public void initCommon() {
+        System.setProperty("java.awt.headless", "true");
         initLogger();
     }
 
@@ -46,6 +47,7 @@ public final class Initializer extends MinecraftAECore {
         // Show Version Information
         getLogger().info("LWJGL Version: " + org.lwjgl.Version.getVersion());
         getLogger().info("GLFW Version: " + glfwGetVersionString());
+
     }
 
 

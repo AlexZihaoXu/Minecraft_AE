@@ -133,7 +133,6 @@ public class ChunkSectionMesher extends MinecraftAECore {
                 }
             }
         }
-        System.out.println(System.nanoTime() - beginTime);
         mesh = builder.build();
     }
 

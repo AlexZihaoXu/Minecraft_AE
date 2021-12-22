@@ -5,7 +5,6 @@ import site.alex_xu.minecraft.client.render.Renderer;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Framebuffer extends ImageType implements BindableContext {
@@ -29,7 +28,6 @@ public class Framebuffer extends ImageType implements BindableContext {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureID, 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            System.out.println(glCheckFramebufferStatus(GL_FRAMEBUFFER));
             throw new IllegalStateException("Unable to create frame buffer!");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
