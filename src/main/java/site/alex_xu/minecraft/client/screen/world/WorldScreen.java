@@ -1,6 +1,7 @@
 package site.alex_xu.minecraft.client.screen.world;
 
 import site.alex_xu.minecraft.client.MinecraftClient;
+import site.alex_xu.minecraft.client.chunk.ChunkRenderer;
 import site.alex_xu.minecraft.client.chunk.ChunkSectionMesher;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
 import site.alex_xu.minecraft.client.render.Renderer2D;
@@ -8,7 +9,9 @@ import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
 import site.alex_xu.minecraft.core.Minecraft;
+import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
+import site.alex_xu.minecraft.server.chunk.Chunk;
 import site.alex_xu.minecraft.server.chunk.ChunkSection;
 
 import java.util.ArrayList;
@@ -22,8 +25,6 @@ public class WorldScreen extends Screen {
 
     protected Camera camera = new Camera();
     protected FirstPersonController firstPersonController;
-    protected ChunkSection chunk;
-    protected ChunkSectionMesher chunkRenderer;
     protected boolean showDebugInformation = false;
     protected long lastCountTime = System.currentTimeMillis();
     protected int fps = 0;
@@ -34,25 +35,30 @@ public class WorldScreen extends Screen {
     }
 
 
+    public Chunk chunk = new Chunk();
+    public ChunkRenderer chunkRenderer;
+
     @Override
     public void onSetup() {
         firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera);
         camera.yaw = Math.PI / 2;
+        chunkRenderer = new ChunkRenderer(chunk);
 
-        chunk = new ChunkSection();
-        chunkRenderer = new ChunkSectionMesher(chunk);
-        var blocks = new ArrayList<>(Blocks.blocks.values());
-        for (int x = 0; x < 16; x++) {
-            for (int y = 0; y < 16; y++) {
-                for (int z = 0; z < 16; z++) {
-                    chunk.setBlock(blocks.get((int) (Math.random() * blocks.size())), x, y, z);
-                }
-            }
-        }
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
+
+        var blocks = new ArrayList<>(Blocks.blocks.values());
+
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 256; y++) {
+                    chunk.setBlock(blocks.get((int) (Math.random() * blocks.size())), x, y, z);
+                }
+            }
+        }
+
     }
 
     @Override
@@ -83,10 +89,11 @@ public class WorldScreen extends Screen {
         frameCount++;
 
         context.getRenderer().clear(0.8f);
+        chunkRenderer.render(context.getRenderer().get3D(), getCamera());
+
         glDisable(GL_DEPTH_TEST);
-        context.getRenderer().get3D()
-                .render(camera, chunkRenderer.getModel());
         if (showDebugInformation) {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             var renderer = context.getRenderer().get2D();
             String[] informationList = new String[]{
                     "Minecraft(AE) " + Minecraft.VERSION,
@@ -95,7 +102,7 @@ public class WorldScreen extends Screen {
             };
 
             for (int i = 0; i < informationList.length; i++) {
-                renderer.text(informationList[i], 0, i * FontTextureAtlas.FONT_LINE_HEIGHT, Renderer2D.BACKGROUND_FILL);
+                renderer.text(informationList[i], 0, i * FontTextureAtlas.FONT_LINE_HEIGHT, Renderer2D.BACKGROUND_NONE);
             }
 
         }
@@ -106,6 +113,8 @@ public class WorldScreen extends Screen {
                 .translate(window.getWidth() / 2f, window.getHeight() / 2f)
                 .color(1, 1, 1, 1)
                 .fillRect(-14, -2f, 27, 3)
-                .fillRect(-2f, -14, 3, 27);
+                .fillRect(-2, -14, 3, 12)
+                .fillRect(-2, 1, 3, 12);
+
     }
 }

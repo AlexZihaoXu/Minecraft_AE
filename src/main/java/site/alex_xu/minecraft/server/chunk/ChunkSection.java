@@ -12,6 +12,8 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     private final Block[][][] blocks = new Block[16][16][16];
     private final HashSet<ChunkModelUpdateCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
     private boolean requiresModelUpdate = false;
+    private final Chunk chunk;
+    private final int sectionY;
 
     public void registerChunkModelUpdateCallback(ChunkModelUpdateCallbackI chunkModelUpdateCallbackI) {
         chunkModelUpdateCallbackIs.add(chunkModelUpdateCallbackI);
@@ -21,8 +23,25 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         chunkModelUpdateCallbackIs.remove(chunkModelUpdateCallbackI);
     }
 
-    public ChunkSection() {
+    public ChunkSection(Chunk chunk, int sectionY) {
+        this.chunk = chunk;
+        this.sectionY = sectionY;
+        if (chunk.hasSection(sectionY + 1)) {
+            chunk.getOrCreateChunkSection(sectionY + 1).requiresModelUpdate = true;
+            System.out.println("re-meshing" + (sectionY + 1));
+        }
+        if (chunk.hasSection(sectionY - 1)) {
+            chunk.getOrCreateChunkSection(sectionY - 1).requiresModelUpdate = true;
+            System.out.println("re-meshing" + (sectionY - 1));
+        }
+    }
 
+    public Chunk getChunk() {
+        return chunk;
+    }
+
+    public int getSectionY() {
+        return sectionY;
     }
 
     public void setBlock(Block block, int x, int y, int z) {
@@ -35,8 +54,15 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     }
 
     public Block getBlock(int x, int y, int z) {
-        if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0)
+        if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0) {
+            if (y >= 16 || y < 0) {
+                int nextChunkSectionY = (int) (sectionY + Math.floor(y / 16f));
+                if (chunk.hasSection(nextChunkSectionY)) {
+                    return chunk.getOrCreateChunkSection(nextChunkSectionY).getBlock(x, (y % 16 + 16) % 16, z);
+                }
+            }
             return null;
+        }
         Block block = blocks[x][15 - z][y];
         return block == null ? Blocks.AIR : block;
     }

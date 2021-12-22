@@ -12,7 +12,7 @@ import site.alex_xu.minecraft.server.models.BlockModelDef;
 import java.awt.geom.Rectangle2D;
 
 public class ChunkSectionMesher extends MinecraftAECore {
-    protected ChunkSection chunk;
+    protected ChunkSection chunkSection;
     protected Model mesh = null;
 
     public Model getModel() {
@@ -112,13 +112,12 @@ public class ChunkSectionMesher extends MinecraftAECore {
         }
     }
 
-    public ChunkSectionMesher(ChunkSection chunk) {
-        this.chunk = chunk;
-        chunk.registerChunkModelUpdateCallback(this::updateMesh);
+    public ChunkSectionMesher(ChunkSection section) {
+        this.chunkSection = section;
+        section.registerChunkModelUpdateCallback(this::updateMesh);
     }
 
     public void updateMesh(ChunkSection chunk) {
-        long beginTime = System.nanoTime();
         ModelBuilder builder = new ModelBuilder();
         if (mesh != null) {
             mesh.free();

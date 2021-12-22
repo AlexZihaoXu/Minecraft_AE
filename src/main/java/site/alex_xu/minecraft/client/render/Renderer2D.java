@@ -209,18 +209,33 @@ public class Renderer2D extends Renderer {
 
     public void text(String text, float x, float y, int background) {
         prepareRendering();
+
+        float or = r;
+        float og = g;
+        float ob = b;
+        float oa = a;
+
+        color(0.2f, 0.2f, 0.2f, 0.5f);
+        fillRect(x, y, getTextWidth(text), FontTextureAtlas.FONT_LINE_HEIGHT);
+
+        color(or, og, ob, oa);
+
+        x -= 2;
+        y -= 2;
+
         int offset = 0;
         rectShader.setVec4("color", r, g, b, a);
         rectShader.setInt("drawMode", DRAW_MODE_TEXT);
         rectShader.setInt("texture0", 0);
         rectShader.setFloat("texWidth", FontTextureAtlas.getInstance().getAtlas().getWidth());
         rectShader.setFloat("texHeight", FontTextureAtlas.getInstance().getAtlas().getHeight());
-        rectShader.setInt("background", background);
+        rectShader.setInt("background", background == BACKGROUND_FILL ? 0 : background);
         glActiveTexture(GL_TEXTURE0);
         FontTextureAtlas.getInstance().getAtlas().bind();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         rectVAO.bind();
         rectEBO.bind();
+
 
         for (int i = 0; i < text.length(); i++) {
             var bound = FontTextureAtlas.getInstance().getBoundOf(text.charAt(i));
