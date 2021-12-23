@@ -8,10 +8,16 @@ import java.util.HashMap;
 
 public class Blocks extends MinecraftAECore {
     public static HashMap<String, Block> blocks = new HashMap<>();
+    private static final HashMap<Block, String> blockNameMap = new HashMap<>();
 
-    public static Block register(String name, Block block) {
+    private static Block register(String name, Block block) {
         blocks.put(name, block);
+        blockNameMap.put(block, name);
         return block;
+    }
+
+    public static String nameOf(Block block) {
+        return blockNameMap.get(block);
     }
 
     // Blocks

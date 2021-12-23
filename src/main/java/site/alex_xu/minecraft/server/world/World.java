@@ -21,12 +21,12 @@ public class World extends MinecraftAECore {
     }
 
     public void setBlock(Block block, int x, int y, int z) {
-        getOrCreateChunk(x / 16, z / 16).setBlock(block, Math.floorMod(x, 16), y, Math.floorMod(15-z, 16));
+        getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).setBlock(block, Math.floorMod(x, 16), y, Math.floorMod(z, 16));
     }
 
     public Block getBlock(int x, int y, int z) {
-        if (hasChunk(x / 16, z / 16)) {
-            getOrCreateChunk(x / 16, z / 16).getBlock(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
+        if (hasChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16))) {
+            return getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).getBlock(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
         }
         return Blocks.AIR;
     }

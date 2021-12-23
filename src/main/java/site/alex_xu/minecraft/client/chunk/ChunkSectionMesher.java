@@ -20,15 +20,15 @@ public class ChunkSectionMesher extends MinecraftAECore {
     }
 
     protected abstract static class BlockModelApplier extends BlockModelDef {
-        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, ChunkSection chunk) {
+        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, ChunkSection section) {
             for (Face face : self.faceMap.values()) {
-                applyTriangle(self, face, builder, x, y, z, chunk, true);
-                applyTriangle(self, face, builder, x, y, z, chunk, false);
+                applyTriangle(self, face, builder, x, y, z, section, true);
+                applyTriangle(self, face, builder, x, y, z, section, false);
             }
 
         }
 
-        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, ChunkSection chunk, boolean firstTriangle) {
+        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, ChunkSection section, boolean firstTriangle) {
             var v1 = face.v1();
             var v2 = firstTriangle ? face.v2() : face.v3();
             var v3 = firstTriangle ? face.v3() : face.v4();
@@ -55,37 +55,37 @@ public class ChunkSectionMesher extends MinecraftAECore {
             boolean canceled = false;
             if (direction != -1) {
                 if (direction == 0) { // North
-                    Block block = chunk.getBlock(x, y, 15 - (z - 1));
+                    Block block = section.getBlock(x, y, (z - 1));
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 1) { // South
-                    Block block = chunk.getBlock(x, y, 15 - (z + 1));
+                    Block block = section.getBlock(x, y, (z + 1));
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 2) { // West
-                    Block block = chunk.getBlock(x - 1, y, 15 - z);
+                    Block block = section.getBlock(x - 1, y, z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 3) { // East
-                    Block block = chunk.getBlock(x + 1, y, 15 - z);
+                    Block block = section.getBlock(x + 1, y, z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else if (direction == 4) { // Top
-                    Block block = chunk.getBlock(x, y + 1, 15 - z);
+                    Block block = section.getBlock(x, y + 1, z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
                     }
                 } else { // Bottom
-                    Block block = chunk.getBlock(x, y - 1, 15 - z);
+                    Block block = section.getBlock(x, y - 1, z);
                     block = block == null ? Blocks.AIR : block;
                     if (block.settings().opaque) {
                         canceled = true;
@@ -126,7 +126,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 for (int y = 0; y < 16; y++) {
-                    Block block = chunk.getBlock(x, y, 15 - z);
+                    Block block = chunk.getBlock(x, y, z);
                     if (block == Blocks.AIR) continue;
                     BlockModelApplier.apply(block.modelDef(), builder, x, y, z, chunk);
                 }

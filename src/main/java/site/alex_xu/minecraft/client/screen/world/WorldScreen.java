@@ -54,14 +54,21 @@ public class WorldScreen extends Screen {
 
         var blocks = new ArrayList<>(Blocks.blocks.values());
 
-        for (int x = 0; x < 200; x++) {
-            for (int z = 0; z < 200; z++) {
+        for (int x = -16; x < 16; x++) {
+            for (int z = -16; z < 16; z++) {
                 for (int y = 0; y < 3; y++) {
-                    world.setBlock(blocks.get(1), x, y, z);
+                    world.setBlock(blocks.get(2), x, y, z);
                 }
             }
         }
 
+        for (int x = 0; x < 5; x++) {
+            for (int z = 0; z < 5; z++) {
+                for (int y = 0; y < 256; y++) {
+                    world.setBlock(blocks.get((int)(Math.random() * blocks.size())), x + 13, y, z + 13);
+                }
+            }
+        }
     }
 
     @Override

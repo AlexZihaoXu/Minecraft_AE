@@ -58,22 +58,20 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         if (block == null)
             block = Blocks.AIR;
         if (block != getBlock(x, y, z)) {
-            blocks[x][15 - z][y] = block;
+            blocks[x][z][y] = block;
             requiresModelUpdate = true;
         }
     }
 
     public Block getBlock(int x, int y, int z) {
         if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0) {
-            if (y >= 16 || y < 0) {
-                int nextChunkSectionY = sectionY + Math.floorDiv(y, 16);
-                if (chunk.hasSection(nextChunkSectionY)) {
-                    return chunk.getOrCreateChunkSection(nextChunkSectionY).getBlock(x, Math.floorMod(y, 16), z);
-                }
-            }
-            return null;
+            var world = getChunk().getWorld();
+            var originX = getChunk().getX() * 16;
+            var originY = sectionY * 16;
+            var originZ = getChunk().getY() * 16;
+            return world.getBlock(originX + x, originY + y, originZ + z);
         }
-        Block block = blocks[x][15 - z][y];
+        Block block = blocks[x][z][y];
         return block == null ? Blocks.AIR : block;
     }
 
