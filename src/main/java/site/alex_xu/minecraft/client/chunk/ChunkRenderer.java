@@ -12,7 +12,7 @@ public class ChunkRenderer extends MinecraftAECore {
     private final Chunk chunk;
 
     public ChunkRenderer(Chunk chunk) {
-        chunk.addChunkCreationCallback(this::onCreatingSection);
+        chunk.registerChunkCreationCallback(this::onCreatingSection);
         this.chunk = chunk;
     }
 

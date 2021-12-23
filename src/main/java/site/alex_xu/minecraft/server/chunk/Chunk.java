@@ -12,6 +12,7 @@ import java.util.HashSet;
 public class Chunk extends MinecraftAECore implements Tickable {
     private final ChunkSection[] sections = new ChunkSection[16];
     private final HashSet<ChunkSectionCreationCallbackI> chunkCreationCallbacks = new HashSet<>();
+    private final HashSet<ChunkDisposeCallbackI> chunkDisposeCallbacks = new HashSet<>();
     private final int x, y;
     private final World world;
 
@@ -19,12 +20,20 @@ public class Chunk extends MinecraftAECore implements Tickable {
         return world;
     }
 
-    public void addChunkCreationCallback(ChunkSectionCreationCallbackI chunkCreationCallback) {
+    public void registerChunkCreationCallback(ChunkSectionCreationCallbackI chunkCreationCallback) {
         chunkCreationCallbacks.add(chunkCreationCallback);
     }
 
     public void removeChunkCreationCallback(ChunkSectionCreationCallbackI chunkCreationCallback) {
         chunkCreationCallbacks.remove(chunkCreationCallback);
+    }
+
+    public void registerChunkDisposeCallback(ChunkDisposeCallbackI chunkDisposeCallback) {
+        chunkDisposeCallbacks.add(chunkDisposeCallback);
+    }
+
+    public void removeChunkDisposeCallback(ChunkDisposeCallbackI chunkDisposeCallback) {
+        chunkDisposeCallbacks.remove(chunkDisposeCallback);
     }
 
     public Chunk(World world, int x, int y) {
@@ -80,7 +89,11 @@ public class Chunk extends MinecraftAECore implements Tickable {
         return chunkSectionY >= 0 && chunkSectionY < 16 && sections[chunkSectionY] != null;
     }
 
-    public static interface ChunkSectionCreationCallbackI extends Callback {
+    public interface ChunkSectionCreationCallbackI extends Callback {
         void execute(Chunk chunk, ChunkSection section);
+    }
+
+    public interface ChunkDisposeCallbackI extends Callback {
+        void execute(Chunk chunk);
     }
 }

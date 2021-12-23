@@ -24,6 +24,7 @@ import static org.lwjgl.opengl.GL14.*;
 
 public class WorldScreen extends Screen {
 
+    public static String debugInfo = "";
 
     protected Camera camera = new Camera();
     protected FirstPersonController firstPersonController;
@@ -42,10 +43,11 @@ public class WorldScreen extends Screen {
 
     @Override
     public void onSetup() {
-        firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera);
         camera.yaw = Math.PI / 2;
+        camera.position.y = 10;
         world = new World();
         worldRenderer = new WorldRenderer(world);
+        firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera, world);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -65,10 +67,12 @@ public class WorldScreen extends Screen {
         for (int x = 0; x < 5; x++) {
             for (int z = 0; z < 5; z++) {
                 for (int y = 0; y < 256; y++) {
-                    world.setBlock(blocks.get((int)(Math.random() * blocks.size())), x + 13, y, z + 13);
+                    world.setBlock(blocks.get((int) (Math.random() * blocks.size())), x + 13, y, z + 13);
                 }
             }
         }
+
+        world.setBlock(Blocks.CRAFTING_TABLE, 0, 3, 0);
     }
 
     @Override
@@ -108,7 +112,8 @@ public class WorldScreen extends Screen {
             String[] informationList = new String[]{
                     "Minecraft(AE) " + Minecraft.VERSION,
                     fps + " FPS ",
-                    "XYZ: " + String.format("%.3f / %.3f / %.3f", camera.position.x, camera.position.y, camera.position.z)
+                    "XYZ: " + String.format("%.3f / %.3f / %.3f", camera.position.x, camera.position.y, camera.position.z),
+                    debugInfo
             };
 
             for (int i = 0; i < informationList.length; i++) {

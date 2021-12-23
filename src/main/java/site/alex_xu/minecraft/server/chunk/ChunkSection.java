@@ -10,17 +10,26 @@ import java.util.HashSet;
 
 public class ChunkSection extends MinecraftAECore implements Tickable {
     private final Block[][][] blocks = new Block[16][16][16];
-    private final HashSet<ChunkModelUpdateCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
+    private final HashSet<ChunkEventCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
+    private final HashSet<ChunkEventCallbackI> chunkDisposeCallbackIs = new HashSet<>();
     private boolean requiresModelUpdate = false;
     private final Chunk chunk;
     private final int sectionY;
 
-    public void registerChunkModelUpdateCallback(ChunkModelUpdateCallbackI chunkModelUpdateCallbackI) {
+    public void registerChunkModelUpdateCallback(ChunkEventCallbackI chunkModelUpdateCallbackI) {
         chunkModelUpdateCallbackIs.add(chunkModelUpdateCallbackI);
     }
 
-    public void remove(ChunkModelUpdateCallbackI chunkModelUpdateCallbackI) {
+    public void removeChunkModelUpdateCallback(ChunkEventCallbackI chunkModelUpdateCallbackI) {
         chunkModelUpdateCallbackIs.remove(chunkModelUpdateCallbackI);
+    }
+
+    public void registerChunkDisposeCallback(ChunkEventCallbackI chunkDisposeCallbackI) {
+        chunkDisposeCallbackIs.add(chunkDisposeCallbackI);
+    }
+
+    public void removeChunkDisposeCallback(ChunkEventCallbackI chunkDisposeCallbackI) {
+        chunkDisposeCallbackIs.remove(chunkDisposeCallbackI);
     }
 
     public ChunkSection(Chunk chunk, int sectionY) {
@@ -76,7 +85,7 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     }
 
     protected void modelUpdate() {
-        for (ChunkModelUpdateCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
+        for (ChunkEventCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
             chunkModelUpdateCallbackI.execute(this);
         }
     }
@@ -89,7 +98,13 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         }
     }
 
-    public interface ChunkModelUpdateCallbackI extends Callback {
+    public interface ChunkEventCallbackI extends Callback {
         void execute(ChunkSection chunk);
+    }
+
+    public void onDispose() {
+        for (ChunkEventCallbackI chunkDisposeCallback : chunkDisposeCallbackIs) {
+            chunkDisposeCallback.execute(this);
+        }
     }
 }
