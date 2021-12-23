@@ -4,6 +4,7 @@ import site.alex_xu.minecraft.client.MinecraftClient;
 import site.alex_xu.minecraft.client.chunk.ChunkRenderer;
 import site.alex_xu.minecraft.client.chunk.ChunkSectionMesher;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
+import site.alex_xu.minecraft.client.render.GameObjectRenderer;
 import site.alex_xu.minecraft.client.render.Renderer2D;
 import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.screen.Screen;
@@ -105,6 +106,10 @@ public class WorldScreen extends Screen {
         context.getRenderer().clear(0.8f);
         worldRenderer.render(context.getRenderer().get3D(), getCamera());
 
+        var objectRenderer = new GameObjectRenderer(context);
+        objectRenderer.color(0.2f, 0.2f, 0.2f, 0.8f)
+                .renderBox(camera, 0, 4, 0, 1, 1, 1);
+
         glDisable(GL_DEPTH_TEST);
         if (showDebugInformation) {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -130,6 +135,8 @@ public class WorldScreen extends Screen {
                 .fillRect(-14, -2f, 27, 3)
                 .fillRect(-2, -14, 3, 12)
                 .fillRect(-2, 1, 3, 12);
+
+
 
     }
 }
