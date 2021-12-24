@@ -6,13 +6,11 @@ import site.alex_xu.minecraft.client.render.GameObjectRenderer;
 import site.alex_xu.minecraft.client.screen.world.WorldScreen;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.core.Tickable;
-import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.collision.Hitbox;
 import site.alex_xu.minecraft.server.world.World;
 
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -58,139 +56,101 @@ public class Entity extends MinecraftAECore implements Tickable {
 
     @Override
     public void onTick(double deltaTime) {
-        onGravityTick(deltaTime);
-    }
+        onCollisionTick(deltaTime);
 
-    public void onGravityTick(double dt) {
-//        velocity.y -= dt * 9.8f / 100f;
-//        position().y += velocity.y * dt;
-
-        dt *= 2;
+//        float speed = 4.3f;
+        float speed = 1f;
         if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_UP) == GLFW_PRESS) {
-            position().z -= dt;
+            velocity.z = -speed;
         }
         if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_DOWN) == GLFW_PRESS) {
-            position().z += dt;
+            velocity.z = speed;
         }
         if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            position().x += dt;
+            velocity.x = speed;
         }
         if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_LEFT) == GLFW_PRESS) {
-            position().x -= dt;
+            velocity.x = -speed;
         }
         if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_PAGE_DOWN) == GLFW_PRESS) {
-            position().y -= dt;
+            velocity.y = -speed;
         }
         if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_PAGE_UP) == GLFW_PRESS) {
-            position().y += dt;
+            velocity.y = speed;
         }
+    }
+
+    public void onCollisionTick(double dt) {
+//        velocity.y -= dt * 9.8f / 100f;
+//        position().y += velocity.y * dt;
 
 
         var objectRenderer = new GameObjectRenderer(MinecraftClient.getInstance().getWindow());
         var camera = ((WorldScreen) MinecraftClient.getInstance().getScreenManager().get(0)).getCamera();
-        var baseRect = new Rectangle2D.Double(position().x - hitbox().width() / 2, position().z - hitbox().width() / 2, hitbox().width(), hitbox().width());
-        var sideRectX = new Rectangle2D.Double(position().z - hitbox.width() / 2, position().y, hitbox().width(), hitbox().height());
-        var sideRectZ = new Rectangle2D.Double(position().x - hitbox.width() / 2, position().y, hitbox().width(), hitbox().height());
+        Rectangle2D.Float baseRect = new Rectangle2D.Float(position().x - hitbox().width() / 2, position().z - hitbox().width() / 2, hitbox().width(), hitbox().width());
 
-        float distance = Float.POSITIVE_INFINITY;
-        Vector3f motionDelta = null;
-        Vector3f newPos = null;
+        float boxZMin = position().z - hitbox().width() / 2;
+        float boxZMax = position().z + hitbox().width() / 2;
+        float boxXMin = position().x - hitbox().width() / 2;
+        float boxXMax = position().x + hitbox().width() / 2;
+        float boxYMin = position().y;
+        float boxYMax = position().y + hitbox().height();
 
-
-        // Up Down
         for (int x = world.blockXOf((float) baseRect.getMinX()); x <= world.blockXOf((float) baseRect.getMaxX()); x++) {
             for (int z = world.blockZOf((float) baseRect.getMinY()); z <= world.blockZOf((float) baseRect.getMaxY()); z++) {
-                Block block = world.getBlock(x, world.blockYOf(position().y - 0.5f), z);
-                if (block.settings().material.blocksMovement()) {
-                    if (position().y < world.blockYOf(position().y - 0.5f) + 1) {
-//                        Vector3f motion = new Vector3f(0, 0, 0);
-                        Vector3f motion = new Vector3f(0, position().y - (world.blockYOf(position().y - 0.5f) + 1), 0);
-                        if (motion.distanceSquared(0, 0, 0) < distance) {
-                            distance = motion.distanceSquared(0, 0, 0);
-                            motionDelta = motion;
-                            newPos = new Vector3f(position().x, Math.max(position().y, world.blockYOf(position().y - 0.5f) + 1), position().z);
-                        }
-                    }
-                }
-                block = world.getBlock(x, world.blockYOf(position().y + 0.5f + hitbox().height()), z);
-                if (block.settings().material.blocksMovement()) {
-                    if (position().y + hitbox().height() > world.blockYOf(position().y + 0.5f + hitbox().height())) {
-                        Vector3f motion = new Vector3f(0, position().y - (world.blockYOf(position().y + 0.5f + hitbox().height()) - hitbox.height()), 0);
-                        if (motion.distanceSquared(0, 0, 0) < distance) {
-                            distance = motion.distanceSquared(0, 0, 0);
-                            motionDelta = motion;
-                            newPos = new Vector3f(position().x, Math.min(position().y, world.blockYOf(position().y + 0.5f + hitbox().height()) - hitbox.height()), position().z);
-                        }
+                for (int y = world.blockYOf(position().y); y <= world.blockYOf(position().y + hitbox().height()); y++) {
+                    if (world.getBlock(x, y, z).settings().material.blocksMovement())
+                        objectRenderer.color(1, 1, 0, 1);
+                    else
+                        objectRenderer.color(1, 1, 1, 0.5f);
+                    objectRenderer.renderBox(
+                            camera,
+                            x, y, z,
+                            1, 1, 1
+                    );
+                    if (world.getBlock(x, y, z).settings().material.blocksMovement()) {
+                        int blockZMin = z;
+                        int blockZMax = z + 1;
+                        int blockXMin = x;
+                        int blockXMax = x + 1;
+                        int blockYMin = y;
+                        int blockYMax = y + 1;
+
+                        float xMin = Math.max(blockXMin, boxXMin);
+                        float xMax = Math.min(blockXMax, boxXMax);
+                        float yMin = Math.max(blockYMin, boxYMin);
+                        float yMax = Math.min(blockYMax, boxYMax);
+                        float zMin = Math.max(blockZMin, boxZMin);
+                        float zMax = Math.min(blockZMax, boxZMax);
+
+                        float xDiff = xMax - xMin;
+                        float yDiff = yMax - yMin;
+                        float zDiff = zMax - zMin;
+
+                        objectRenderer.color(1, 0, 1, 1).renderBox(
+                                camera,
+                                xMin, yMin, zMin,
+                                xDiff, yDiff, zDiff
+                        );
+
+
                     }
                 }
             }
         }
 
-        // X-Sides
-        for (int z = world.blockZOf((float) sideRectX.getMinX()); z <= world.blockZOf((float) sideRectX.getMaxX()); z++) {
-            for (int y = world.blockYOf((float) sideRectX.getMinY()); y <= world.blockYOf((float) sideRectX.getMaxY()); y++) {
-                Block block = world.getBlock(world.blockXOf(position().x + hitbox().width() / 2), y, z);
-                if (block.settings().material.blocksMovement()) {
-                    if (position().x > world.blockXOf(position().x + hitbox().width() / 2) - hitbox().width() / 2) {
-                        Vector3f motion = new Vector3f(position().x - (world.blockXOf(position().x + hitbox().width() / 2) - hitbox().width() / 2), 0, 0);
-                        if (motion.distanceSquared(0, 0, 0) < distance) {
-                            distance = motion.distanceSquared(0, 0, 0);
-                            motionDelta = motion;
-                            newPos = new Vector3f(Math.min(position().x, world.blockXOf(position().x + hitbox().width() / 2) - hitbox().width() / 2), position().y, position().z);
-                        }
-                    }
-                }
-                block = world.getBlock(world.blockXOf(position().x - hitbox().width() / 2), y, z);
-                if (block.settings().material.blocksMovement()) {
-                    if (position().x < world.blockXOf(position().x - hitbox().width() / 2) + hitbox().width() / 2 + 1) {
-                        Vector3f motion = new Vector3f(position().x - (world.blockXOf(position().x - hitbox().width() / 2) + hitbox().width() / 2 + 1), 0, 0);
-                        if (motion.distanceSquared(0, 0, 0) < distance) {
-                            distance = motion.distanceSquared(0, 0, 0);
-                            motionDelta = motion;
-                            newPos = new Vector3f(Math.max(position().x, world.blockXOf(position().x - hitbox().width() / 2) + hitbox().width() / 2 + 1), position().y, position().z);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Y-Sides
-        for (int x = world.blockXOf((float) sideRectZ.getMinX()); x <= world.blockXOf((float) sideRectZ.getMaxX()); x++) {
-            for (int y = world.blockYOf((float) sideRectZ.getMinY()); y <= world.blockYOf((float) sideRectZ.getMaxY()); y++) {
-                Block block = world.getBlock(x, y, world.blockZOf(position().z + hitbox().width() / 2));
-                if (block.settings().material.blocksMovement()) {
-                    if (position().z > world.blockXOf(position().z + hitbox().width() / 2) - hitbox().width() / 2) {
-                        Vector3f motion = new Vector3f(0, 0, position().z - (world.blockXOf(position().z + hitbox().width() / 2) - hitbox().width() / 2));
-                        if (motion.distanceSquared(0, 0, 0) < distance) {
-                            distance = motion.distanceSquared(0, 0, 0);
-                            motionDelta = motion;
-                            newPos = new Vector3f(position().x, position().y, Math.min(position().z, world.blockXOf(position().z + hitbox().width() / 2) - hitbox().width() / 2));
-                        }
-                    }
-                }
-                block = world.getBlock(x, y, world.blockXOf(position().z - hitbox().width() / 2));
-                if (block.settings().material.blocksMovement()) {
-                    if (position().z < world.blockXOf(position().z - hitbox().width() / 2) + hitbox().width() / 2 + 1) {
-                        Vector3f motion = new Vector3f(0, 0, position().z-( world.blockXOf(position().z - hitbox().width() / 2) + hitbox().width() / 2 + 1));
-                        if (motion.distanceSquared(0, 0, 0) < distance) {
-                            distance = motion.distanceSquared(0, 0, 0);
-                            motionDelta = motion;
-                            newPos = new Vector3f(position().x, position().y, Math.max(position().z, world.blockXOf(position().z - hitbox().width() / 2) + hitbox().width() / 2 + 1));
-                        }
-                    }
-                }
-            }
-        }
+        int south = world.blockZOf((float) baseRect.getMinY());
+        int north = world.blockZOf((float) baseRect.getMaxY());
+        int west = world.blockXOf((float) baseRect.getMinX());
+        int east = world.blockXOf((float) baseRect.getMaxX());
+        int top = world.blockYOf(position().y + hitbox().height());
+        int bottom = world.blockYOf(position().y);
 
 
-
+        position().add(new Vector3f(velocity).mul((float) dt));
+        velocity.add(new Vector3f(velocity).mul(-(float) dt * 10));
 
         WorldScreen.debugInfo = "Block: " + Blocks.nameOf(world.getBlock(baseRect.getMinX(), position().y + 0.5f + hitbox.height(), baseRect.getMinY()));
 
-
-
-        if (motionDelta != null) {
-            position().set(newPos);
-        }
     }
 }
