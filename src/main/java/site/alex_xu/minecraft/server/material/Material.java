@@ -6,6 +6,8 @@ public final class Material {
     public static final Material STONE = new Builder().build();
     public static final Material GRASS = new Builder().build();
     public static final Material WOOD = new Builder().burnable().build();
+    public static final Material LEAVES = new Builder().lightPassesThrough().notSolid().burnable().build();
+    public static final Material FLUID = new Builder().allowsMovement().lightPassesThrough().notSolid().replaceable().liquid().build();
 
     private final boolean blocksMovement;
     private final boolean burnable;

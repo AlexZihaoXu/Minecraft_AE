@@ -57,37 +57,37 @@ public class ChunkSectionMesher extends MinecraftAECore {
                 if (direction == 0) { // North
                     Block block = section.getBlock(x, y, (z - 1));
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().opaque) {
+                    if (block.settings().material.isSolid()) {
                         canceled = true;
                     }
                 } else if (direction == 1) { // South
                     Block block = section.getBlock(x, y, (z + 1));
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().opaque) {
+                    if (block.settings().material.isSolid()) {
                         canceled = true;
                     }
                 } else if (direction == 2) { // West
                     Block block = section.getBlock(x - 1, y, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().opaque) {
+                    if (block.settings().material.isSolid()) {
                         canceled = true;
                     }
                 } else if (direction == 3) { // East
                     Block block = section.getBlock(x + 1, y, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().opaque) {
+                    if (block.settings().material.isSolid()) {
                         canceled = true;
                     }
                 } else if (direction == 4) { // Top
                     Block block = section.getBlock(x, y + 1, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().opaque) {
+                    if (block.settings().material.isSolid()) {
                         canceled = true;
                     }
                 } else { // Bottom
                     Block block = section.getBlock(x, y - 1, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().opaque) {
+                    if (block.settings().material.isSolid()) {
                         canceled = true;
                     }
                 }

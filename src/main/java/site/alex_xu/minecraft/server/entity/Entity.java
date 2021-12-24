@@ -60,7 +60,7 @@ public class Entity extends MinecraftAECore implements Tickable {
 
     @Override
     public void onTick(double deltaTime) {
-        int collisionScale = (int) (velocity.distanceSquared(0, 0, 0) / (100 * 100)) + 1;
+        int collisionScale = (int) (velocity.distanceSquared(0, 0, 0) / (16 * 16)) + 1;
         for (int i = 0; i < collisionScale; i++) {
             onCollisionTick(deltaTime / collisionScale);
         }

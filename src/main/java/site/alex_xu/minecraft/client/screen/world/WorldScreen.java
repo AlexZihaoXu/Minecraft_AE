@@ -49,8 +49,8 @@ public class WorldScreen extends Screen {
         world = new World();
         worldRenderer = new WorldRenderer(world);
         player = new PlayerEntity(world);
-        player.position().y = 100000;
-        player.velocity().y = -8000;
+        player.position().y = 300;
+        player.velocity().y = -200;
         firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera, world, player);
 
         glEnable(GL_BLEND);
