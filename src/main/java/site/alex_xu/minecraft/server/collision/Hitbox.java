@@ -1,7 +1,6 @@
 package site.alex_xu.minecraft.server.collision;
 
 import org.joml.Vector3f;
-import site.alex_xu.minecraft.client.model.Model;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.world.World;
 
@@ -21,5 +20,13 @@ public class Hitbox extends MinecraftAECore {
 
     public void handleCollision(World world) {
 
+    }
+
+    public float width() {
+        return width;
+    }
+
+    public float height() {
+        return height;
     }
 }

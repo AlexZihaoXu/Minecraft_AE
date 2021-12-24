@@ -1,20 +1,15 @@
 package site.alex_xu.minecraft.client.render;
 
 import org.joml.Matrix4f;
-import site.alex_xu.minecraft.client.model.Model;
-import site.alex_xu.minecraft.client.model.ModelBuilder;
-import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
 import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.utils.BindableContext;
-import site.alex_xu.minecraft.client.utils.Framebuffer;
 import site.alex_xu.minecraft.client.utils.buffers.ElementBuffer;
 import site.alex_xu.minecraft.client.utils.buffers.VertexArray;
 import site.alex_xu.minecraft.client.utils.buffers.VertexBuffer;
 import site.alex_xu.minecraft.client.utils.shader.Shader;
+import site.alex_xu.minecraft.server.collision.Hitbox;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class GameObjectRenderer extends ModelRenderer {
 
@@ -81,6 +76,14 @@ public class GameObjectRenderer extends ModelRenderer {
 
         glDrawElements(GL_LINES, ebo.length(), GL_UNSIGNED_INT, 0);
         return this;
+    }
+
+
+    public GameObjectRenderer renderHitbox(Camera camera, Hitbox hitbox) {
+        var pos = hitbox.getPosition();
+        var w = hitbox.width();
+        var h = hitbox.height();
+        return color(1, 1, 0, 1).renderBox(camera, pos.x - w / 2, pos.y, pos.z - w / 2, w, h, w);
     }
 
 }

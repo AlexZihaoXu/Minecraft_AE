@@ -140,7 +140,6 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
             onGround = false;
         }
 
-        WorldScreen.debugInfo = "Block Pos: " + bx + " / " + by + " / " + bz;
 
         for (int i = 0; i < 2; i++) {
             block = world.getBlock(bx + 1, by - i, bz);

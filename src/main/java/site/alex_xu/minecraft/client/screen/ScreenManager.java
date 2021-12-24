@@ -33,4 +33,8 @@ public class ScreenManager extends MinecraftAECore {
             screen.onRender(context, vdt);
         }
     }
+
+    public Screen get(int index) {
+        return screenStack.get(screenStack.size() - index - 1);
+    }
 }

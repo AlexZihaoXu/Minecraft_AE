@@ -1,8 +1,6 @@
 package site.alex_xu.minecraft.client.screen.world;
 
 import site.alex_xu.minecraft.client.MinecraftClient;
-import site.alex_xu.minecraft.client.chunk.ChunkRenderer;
-import site.alex_xu.minecraft.client.chunk.ChunkSectionMesher;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
 import site.alex_xu.minecraft.client.render.GameObjectRenderer;
 import site.alex_xu.minecraft.client.render.Renderer2D;
@@ -11,17 +9,16 @@ import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
 import site.alex_xu.minecraft.client.world.WorldRenderer;
 import site.alex_xu.minecraft.core.Minecraft;
-import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
-import site.alex_xu.minecraft.server.chunk.Chunk;
-import site.alex_xu.minecraft.server.chunk.ChunkSection;
+import site.alex_xu.minecraft.server.collision.Hitbox;
+import site.alex_xu.minecraft.server.entity.Entity;
 import site.alex_xu.minecraft.server.world.World;
 
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
 
 public class WorldScreen extends Screen {
 
@@ -41,6 +38,8 @@ public class WorldScreen extends Screen {
 
     public World world;
     public WorldRenderer worldRenderer;
+    public Entity entity1;
+    public Entity entity2;
 
     @Override
     public void onSetup() {
@@ -74,6 +73,10 @@ public class WorldScreen extends Screen {
         }
 
         world.setBlock(Blocks.CRAFTING_TABLE, 0, 3, 0);
+
+        entity1 = new Entity(world, new Hitbox(0.5f, 1)).setPosition(0, 3, 0);
+        entity2 = new Entity(world, new Hitbox(0.5f, 1)).setPosition(0.5f, 5.5f, 0.5f);
+
     }
 
     @Override
@@ -94,6 +97,29 @@ public class WorldScreen extends Screen {
         firstPersonController.onTick(vdt);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+        // Tick
+//        entity2.onTick(vdt);
+        //
+
+        context.getRenderer().clear(0.8f);
+        worldRenderer.render(context.getRenderer().get3D(), getCamera());
+
+        var objectRenderer = new GameObjectRenderer(context);
+        objectRenderer.color(0.2f, 0.2f, 0.2f, 0.8f)
+                .renderBox(camera, 0, 4, 0, 1, 1, 1);
+
+        objectRenderer.renderHitbox(camera, entity1.hitbox());
+        entity1.onTick(vdt);
+
+//        objectRenderer.renderHitbox(camera, entity2.hitbox());
+        {
+
+        }
+        render2D(context, vdt);
+    }
+
+    public void render2D(RenderContext context, double vdt) {
+
         long now = System.currentTimeMillis();
         if (now - lastCountTime > 1000) {
             float dt = (now - lastCountTime) / 1000f;
@@ -102,13 +128,6 @@ public class WorldScreen extends Screen {
             lastCountTime = now;
         }
         frameCount++;
-
-        context.getRenderer().clear(0.8f);
-        worldRenderer.render(context.getRenderer().get3D(), getCamera());
-
-        var objectRenderer = new GameObjectRenderer(context);
-        objectRenderer.color(0.2f, 0.2f, 0.2f, 0.8f)
-                .renderBox(camera, 0, 4, 0, 1, 1, 1);
 
         glDisable(GL_DEPTH_TEST);
         if (showDebugInformation) {
@@ -135,8 +154,5 @@ public class WorldScreen extends Screen {
                 .fillRect(-14, -2f, 27, 3)
                 .fillRect(-2, -14, 3, 12)
                 .fillRect(-2, 1, 3, 12);
-
-
-
     }
 }

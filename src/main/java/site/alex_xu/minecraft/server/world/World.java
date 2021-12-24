@@ -1,5 +1,6 @@
 package site.alex_xu.minecraft.server.world;
 
+import org.joml.Vector3f;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
@@ -32,6 +33,14 @@ public class World extends MinecraftAECore {
             return Blocks.AIR;
         }
         return null;
+    }
+
+    public Block getBlock(float x, float y, float z) {
+        return getBlock(blockXOf(x), blockYOf(y), blockZOf(z));
+    }
+
+    public Block getBlock(double x, double y, double z) {
+        return getBlock((float) x, (float) y, (float) z);
     }
 
     public record ChunkPos(int x, int y) implements Comparable<ChunkPos> {
@@ -73,6 +82,25 @@ public class World extends MinecraftAECore {
         }
     }
 
+    public int blockXOf(float x) {
+        return (int) Math.round(x - 0.5);
+    }
+
+    public int blockZOf(float z) {
+        return (int) Math.round(z - 0.5);
+    }
+
+    public int blockYOf(float y) {
+        return (int) Math.floor(y);
+    }
+
+    public Vector3f blockPosOf(float x, float y, float z) {
+        return new Vector3f(blockXOf(x), blockYOf(y), blockZOf(z));
+    }
+
+    public Vector3f blockPosOf(Vector3f pos) {
+        return blockPosOf(pos.x, pos.y, pos.z);
+    }
 
     private final TreeMap<ChunkPos, Chunk> chunks = new TreeMap<>();
 
