@@ -73,8 +73,9 @@ public class WorldScreen extends Screen {
         }
 
         world.setBlock(Blocks.CRAFTING_TABLE, 0, 3, 0);
+        world.setBlock(Blocks.GRASS_BLOCK, 0, 6, 0);
 
-        entity1 = new Entity(world, new Hitbox(0.5f, 1)).setPosition(0, 3, 0);
+        entity1 = new Entity(world, new Hitbox(0.5f, 0.75f)).setPosition(0, 3, 0);
         entity2 = new Entity(world, new Hitbox(0.5f, 1)).setPosition(0.5f, 5.5f, 0.5f);
 
     }
