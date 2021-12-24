@@ -8,6 +8,7 @@ import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.core.Tickable;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
+import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -16,14 +17,14 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
     public Window window;
     private boolean locked = false;
     private final Camera camera;
-    private Vector3f velocity = new Vector3f();
     private World world;
-    private boolean onGround = false;
+    private PlayerEntity entity;
 
-    public FirstPersonController(Window window, Camera camera, World world) {
+    public FirstPersonController(Window window, Camera camera, World world, PlayerEntity entity) {
         this.window = window;
         this.world = world;
         this.camera = camera;
+        this.entity = entity;
         window.registerMouseButtonChangeCallback(this::onMouseButtonChange);
         window.registerFocusChangeCallback(this::onFocusChange);
         window.registerMouseMoveCallback(this::onMouseMove);
@@ -31,10 +32,8 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
     }
 
     private void onKeyChange(long window, int key, int scancode, int action, int mods) {
-        if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-            if (onGround) {
-                velocity.y += 8.5f;
-            }
+        if (key == GLFW_KEY_SPACE && action == GLFW_PRESS && !entity.inAir()) {
+            entity.velocity().y = 9.5f;
         }
     }
 
@@ -82,83 +81,35 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
 
     @Override
     public void onTick(double deltaTime) {
+        camera.position.set(
+                entity.position().x,
+                entity.position().y + 1.6f,
+                entity.position().z
+        );
         if (locked) {
-            double speed = 100 * deltaTime * (onGround ? 1 : 0.4);
+            float speed = (float) (43f * deltaTime);
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_W) == GLFW_PRESS) {
-                velocity.x += Math.cos(camera.yaw) * speed;
-                velocity.z += Math.sin(camera.yaw) * speed;
+                entity.velocity().x += (float) (Math.cos(camera.yaw) * speed);
+                entity.velocity().z += (float) (Math.sin(camera.yaw) * speed);
             }
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_S) == GLFW_PRESS) {
-                velocity.x -= Math.cos(camera.yaw) * speed;
-                velocity.z -= Math.sin(camera.yaw) * speed;
+                entity.velocity().x += (float) (-Math.cos(camera.yaw) * speed);
+                entity.velocity().z += (float) (-Math.sin(camera.yaw) * speed);
             }
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_A) == GLFW_PRESS) {
-                velocity.x -= Math.cos(camera.yaw + Math.PI / 2) * speed;
-                velocity.z -= Math.sin(camera.yaw + Math.PI / 2) * speed;
+                entity.velocity().x += (float) (-Math.cos(camera.yaw + Math.PI / 2) * speed);
+                entity.velocity().z += (float) (-Math.sin(camera.yaw + Math.PI / 2) * speed);
             }
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_D) == GLFW_PRESS) {
-                velocity.x += Math.cos(camera.yaw + Math.PI / 2) * speed;
-                velocity.z += Math.sin(camera.yaw + Math.PI / 2) * speed;
+                entity.velocity().x += (float) (Math.cos(camera.yaw + Math.PI / 2) * speed);
+                entity.velocity().z += (float) (Math.sin(camera.yaw + Math.PI / 2) * speed);
             }
-//        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_SPACE) == GLFW_PRESS) {
-//            velocity.y += speed;
-//        }
-//        if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-//            velocity.y -= speed;
-//        }
+
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
                 setLocked(false);
             }
         }
-        float dt = (float) Math.min(1 / 20f, deltaTime);
-        velocity.x -= velocity.x * dt * 20 * (onGround ? 1 : 0.4);
-        velocity.z -= velocity.z * dt * 20 * (onGround ? 1 : 0.4);
-
-        handleCollisions();
-        camera.position.x += velocity.x * dt;
-        camera.position.y += velocity.y * dt;
-        camera.position.z += velocity.z * dt;
-
-        velocity.y -= dt * 32;
-        velocity.y = Math.max(velocity.y, -100);
 
     }
 
-    public void handleCollisions() {
-        Block block;
-        int bx = (int) Math.round(camera.position.x - 0.5);
-        int by = (int) Math.floor(camera.position.y);
-        int bz = (int) Math.round(camera.position.z - 0.5);
-        block = world.getBlock(bx, by - 2, bz);
-        if (block != null && block.settings().material.blocksMovement()) {
-            if (camera.position.y < by + 0.65f) {
-                camera.position.y = by + 0.65f;
-                velocity.y = Math.max(0, velocity.y);
-                onGround = true;
-            }
-        } else {
-            onGround = false;
-        }
-
-
-        for (int i = 0; i < 2; i++) {
-            block = world.getBlock(bx + 1, by - i, bz);
-            if (block != null && block.settings().material.blocksMovement()) {
-                camera.position.x = Math.min(camera.position.x, bx + 0.6f);
-            }
-            block = world.getBlock(bx - 1, by - i, bz);
-            if (block != null && block.settings().material.blocksMovement()) {
-                camera.position.x = Math.max(camera.position.x, bx + 0.4f);
-            }
-            block = world.getBlock(bx, by - i, bz + 1);
-            if (block != null && block.settings().material.blocksMovement()) {
-                camera.position.z = Math.min(camera.position.z, bz + 0.6f);
-            }
-            block = world.getBlock(bx, by - i, bz - 1);
-            if (block != null && block.settings().material.blocksMovement()) {
-                camera.position.z = Math.max(camera.position.z, bz + 0.4f);
-            }
-        }
-
-    }
 }

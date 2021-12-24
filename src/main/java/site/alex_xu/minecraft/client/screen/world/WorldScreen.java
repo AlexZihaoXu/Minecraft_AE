@@ -12,6 +12,7 @@ import site.alex_xu.minecraft.core.Minecraft;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.collision.Hitbox;
 import site.alex_xu.minecraft.server.entity.Entity;
+import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
 
 import java.awt.geom.Rectangle2D;
@@ -38,8 +39,8 @@ public class WorldScreen extends Screen {
 
     public World world;
     public WorldRenderer worldRenderer;
-    public Entity entity1;
-    public Entity entity2;
+    public PlayerEntity player;
+
 
     @Override
     public void onSetup() {
@@ -47,7 +48,10 @@ public class WorldScreen extends Screen {
         camera.position.y = 10;
         world = new World();
         worldRenderer = new WorldRenderer(world);
-        firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera, world);
+        player = new PlayerEntity(world);
+        player.position().y = 100000;
+        player.velocity().y = -8000;
+        firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera, world, player);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -72,11 +76,17 @@ public class WorldScreen extends Screen {
             }
         }
 
+        for (int x = -32; x < 32; x++) {
+            for (int z = -32; z < 32; z++) {
+                if (world.getBlock(x, 2, z) == Blocks.AIR) {
+                    world.setBlock(Blocks.OAK_LEAVES, x, 2, z);
+                }
+            }
+        }
+
         world.setBlock(Blocks.CRAFTING_TABLE, 0, 3, 0);
         world.setBlock(Blocks.GRASS_BLOCK, 0, 6, 0);
 
-        entity1 = new Entity(world, new Hitbox(0.5f, 0.75f)).setPosition(0, 3, 0);
-        entity2 = new Entity(world, new Hitbox(0.5f, 1)).setPosition(0.5f, 5.5f, 0.5f);
 
     }
 
@@ -95,6 +105,8 @@ public class WorldScreen extends Screen {
     @Override
     public void onRender(RenderContext context, double vdt) {
         world.onTick(vdt);
+        player.onTick(vdt);
+
         firstPersonController.onTick(vdt);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -109,8 +121,6 @@ public class WorldScreen extends Screen {
         objectRenderer.color(0.2f, 0.2f, 0.2f, 0.8f)
                 .renderBox(camera, 0, 4, 0, 1, 1, 1);
 
-        objectRenderer.renderHitbox(camera, entity1.hitbox());
-        entity1.onTick(vdt);
 
 //        objectRenderer.renderHitbox(camera, entity2.hitbox());
         {
