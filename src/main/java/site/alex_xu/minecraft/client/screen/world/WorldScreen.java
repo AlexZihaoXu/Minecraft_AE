@@ -72,7 +72,7 @@ public class WorldScreen extends Screen {
                 }
             }
         }
-        chunk = world.getOrCreateChunk(0, 1);
+        chunk = world.getOrCreateChunk(0, -1);
         block = Blocks.CRAFTING_TABLE;
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
@@ -82,7 +82,7 @@ public class WorldScreen extends Screen {
             }
         }
 
-        chunk = world.getOrCreateChunk(1, 1);
+        chunk = world.getOrCreateChunk(-1, -1);
         block = Blocks.OAK_LOG;
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
@@ -92,7 +92,7 @@ public class WorldScreen extends Screen {
             }
         }
 
-        chunk = world.getOrCreateChunk(1, 0);
+        chunk = world.getOrCreateChunk(-1, 0);
         block = Blocks.STONE;
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
@@ -101,6 +101,8 @@ public class WorldScreen extends Screen {
                 }
             }
         }
+
+        world.setBlock(Blocks.OAK_LEAVES, 0, 5, 0);
 
     }
 
@@ -132,8 +134,6 @@ public class WorldScreen extends Screen {
         worldRenderer.render(context.getRenderer().get3D(), getCamera());
 
         var objectRenderer = new GameObjectRenderer(context);
-        objectRenderer.color(0.2f, 0.2f, 0.2f, 0.8f)
-                .renderBox(camera, 0, 4, 0, 1, 1, 1);
 
 
 //        objectRenderer.renderHitbox(camera, entity2.hitbox());
@@ -141,7 +141,7 @@ public class WorldScreen extends Screen {
             Vector3i blockPos = firstPersonController.rayCast();
             if (blockPos != null) {
                 glDisable(GL_DEPTH_TEST);
-                objectRenderer.color(1, 1, 1, 1).renderBox(camera, blockPos.x, blockPos.y, blockPos.z, 1, 1, 1);
+                objectRenderer.renderBlockSelectionBox(camera, blockPos.x, blockPos.y, blockPos.z);
             }
         }
         render2D(context, vdt);

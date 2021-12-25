@@ -1,7 +1,6 @@
 package site.alex_xu.minecraft.client.control;
 
-import org.joml.Vector3f;
-import org.joml.Vector3i;
+import org.joml.*;
 import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.screen.world.WorldScreen;
 import site.alex_xu.minecraft.client.utils.Window;
@@ -11,6 +10,10 @@ import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
+
+import java.lang.Math;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -53,11 +56,13 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
 
     public void onMouseButtonChange(int button, boolean pressed) {
         if (button == 0 && pressed) {
-            setLocked(true);
-            Vector3i blockPos = rayCast();
-            if (blockPos != null) {
-                world.setBlock(Blocks.AIR, blockPos.x, blockPos.y, blockPos.z);
+            if (locked) {
+                Vector3i blockPos = rayCast();
+                if (blockPos != null) {
+                    world.setBlock(Blocks.AIR, blockPos.x, blockPos.y, blockPos.z);
+                }
             }
+            setLocked(true);
         }
     }
 
@@ -65,17 +70,35 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
         int distance = 5;
         Vector3f pos = new Vector3f(camera.position);
         WorldScreen.debugInfo = "Block: ???";
-        float precision = 0.01f;
-        for (float i = 0; i < distance; i += precision) {
+        HashSet<Vector3i> blockPoses = new HashSet<>();
+        for (int i = 0; i < distance; i += 1) {
             Vector3i blockPos = new Vector3i(world.blockXOf(pos.x), world.blockYOf(pos.y), world.blockZOf(pos.z));
-            Block block = world.getBlock(blockPos.x, blockPos.y, blockPos.z);
-            if (block != null && !block.settings().material.isReplaceable()) {
-                WorldScreen.debugInfo = "Block: " + blockPos.x + " / " + blockPos.y + " / " + blockPos.z;
-                return blockPos;
+            for (int x = -1; x <= 1; x++) {
+                for (int y = -1; y <= 1; y++) {
+                    for (int z = -1; z <= 1; z++) {
+                        Block block = world.getBlock(blockPos.x + x, blockPos.y + y, blockPos.z + z);
+                        if (block != null && !block.settings().material.isReplaceable()) {
+                            blockPoses.add(new Vector3i(blockPos.x + x, blockPos.y + y, blockPos.z + z));
+                        }
+                    }
+                }
             }
-            pos.add(new Vector3f(camera.getFront().mul(precision)));
+            pos.add(new Vector3f(camera.getFront()));
         }
-        return null;
+
+        Vector3i closestBlock = null;
+        float nearest = Float.POSITIVE_INFINITY;
+        for (Vector3i blockPos : blockPoses) {
+            Vector2f nearFar = new Vector2f();
+            if (Intersectionf.intersectRayAab(camera.position, camera.getFront(), new Vector3f(blockPos), new Vector3f(blockPos).add(1, 1, 1), nearFar)) {
+                if (nearFar.x < nearest) {
+                    nearest = nearFar.x;
+                    closestBlock = blockPos;
+                }
+            }
+        }
+
+        return closestBlock;
     }
 
     public void onMouseMove(double x, double y) {
