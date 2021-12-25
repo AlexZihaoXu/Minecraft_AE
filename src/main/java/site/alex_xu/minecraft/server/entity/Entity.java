@@ -65,7 +65,6 @@ public class Entity extends MinecraftAECore implements Tickable {
             onCollisionTick(deltaTime / collisionScale);
         }
         onGravityTick(deltaTime);
-        WorldScreen.debugInfo = "[" + collisionScale + "]velocity: " + velocity.distance(0, 0, 0);
     }
 
     private void onGravityTick(double deltaTime) {
@@ -113,7 +112,6 @@ public class Entity extends MinecraftAECore implements Tickable {
                         if (yDiff < gap) {
                             yDiff = 0;
                         }
-                        WorldScreen.debugInfo = "yDiff: " + yDiff;
                         if (yDiff <= xDiff && yDiff <= zDiff) {
                             if (boxYMax > blockYMax) {
                                 position().y = blockYMax;

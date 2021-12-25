@@ -7,10 +7,10 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL14.GL_GENERATE_MIPMAP_HINT;
-import static org.lwjgl.opengl.GL14.GL_TEXTURE_LOD_BIAS;
+import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.opengl.GL33.GL_TEXTURE_SWIZZLE_A;
+import static org.lwjgl.opengl.GL33.GL_TEXTURE_SWIZZLE_R;
 import static org.lwjgl.stb.STBImage.*;
 
 public class Texture extends ImageType {
@@ -40,7 +40,8 @@ public class Texture extends ImageType {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 4000);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 5);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -1);
 
             stbi_set_flip_vertically_on_load(true);
             glTexImage2D(GL_TEXTURE_2D, 0, getFormat(), width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, b_img);

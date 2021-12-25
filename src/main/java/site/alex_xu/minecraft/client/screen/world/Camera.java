@@ -19,7 +19,7 @@ public class Camera extends MinecraftAECore {
                 (float) (Math.cos(yaw) * Math.cos(pitch)),
                 (float) Math.sin(pitch),
                 (float) (Math.sin(yaw) * Math.cos(pitch))
-        );
+        ).normalize();
     }
 
     public Matrix4f getMatrix(BindableContext context) {

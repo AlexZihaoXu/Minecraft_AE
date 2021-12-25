@@ -19,7 +19,7 @@ void main() {
         tx += float(mod(int(time * 15), 64)) * (16.0F / texWidth);
     }
     vec4 color = texture(texture0, vec2(tx, ty));
-    if (mode == 0 && color.a == 0) {
+    if (mode == 0 && color.a < 0.7) {
         discard;
     }
 

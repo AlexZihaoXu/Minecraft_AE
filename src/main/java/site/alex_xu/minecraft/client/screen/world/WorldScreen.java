@@ -1,5 +1,6 @@
 package site.alex_xu.minecraft.client.screen.world;
 
+import org.joml.Vector3i;
 import site.alex_xu.minecraft.client.MinecraftClient;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
 import site.alex_xu.minecraft.client.render.GameObjectRenderer;
@@ -9,7 +10,9 @@ import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
 import site.alex_xu.minecraft.client.world.WorldRenderer;
 import site.alex_xu.minecraft.core.Minecraft;
+import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
+import site.alex_xu.minecraft.server.chunk.Chunk;
 import site.alex_xu.minecraft.server.collision.Hitbox;
 import site.alex_xu.minecraft.server.entity.Entity;
 import site.alex_xu.minecraft.server.entity.PlayerEntity;
@@ -60,33 +63,44 @@ public class WorldScreen extends Screen {
 
         var blocks = new ArrayList<>(Blocks.blocks.values());
 
-        for (int x = -16; x < 16; x++) {
-            for (int z = -16; z < 16; z++) {
-                for (int y = 0; y < 3; y++) {
-                    world.setBlock(blocks.get(2), x, y, z);
+        Chunk chunk = world.getOrCreateChunk(0, 0);
+        Block block = Blocks.GRASS_BLOCK;
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 4; y++) {
+                    chunk.setBlock(block, x, y, z);
+                }
+            }
+        }
+        chunk = world.getOrCreateChunk(0, 1);
+        block = Blocks.CRAFTING_TABLE;
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 4; y++) {
+                    chunk.setBlock(block, x, y, z);
                 }
             }
         }
 
-        for (int x = 0; x < 5; x++) {
-            for (int z = 0; z < 5; z++) {
-                for (int y = 0; y < 256; y++) {
-                    world.setBlock(blocks.get((int) (Math.random() * blocks.size())), x + 13, y, z + 13);
+        chunk = world.getOrCreateChunk(1, 1);
+        block = Blocks.OAK_LOG;
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 4; y++) {
+                    chunk.setBlock(block, x, y, z);
                 }
             }
         }
 
-        for (int x = -32; x < 32; x++) {
-            for (int z = -32; z < 32; z++) {
-                if (world.getBlock(x, 2, z) == Blocks.AIR) {
-                    world.setBlock(Blocks.OAK_LEAVES, x, 2, z);
+        chunk = world.getOrCreateChunk(1, 0);
+        block = Blocks.STONE;
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 4; y++) {
+                    chunk.setBlock(block, x, y, z);
                 }
             }
         }
-
-        world.setBlock(Blocks.CRAFTING_TABLE, 0, 3, 0);
-        world.setBlock(Blocks.GRASS_BLOCK, 0, 6, 0);
-        world.setBlock(Blocks.WATER, 2, 3, 0);
 
     }
 
@@ -124,7 +138,11 @@ public class WorldScreen extends Screen {
 
 //        objectRenderer.renderHitbox(camera, entity2.hitbox());
         {
-
+            Vector3i blockPos = firstPersonController.rayCast();
+            if (blockPos != null) {
+                glDisable(GL_DEPTH_TEST);
+                objectRenderer.color(1, 1, 1, 1).renderBox(camera, blockPos.x, blockPos.y, blockPos.z, 1, 1, 1);
+            }
         }
         render2D(context, vdt);
     }
