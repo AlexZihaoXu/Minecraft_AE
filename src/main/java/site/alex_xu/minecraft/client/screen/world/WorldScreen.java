@@ -61,48 +61,15 @@ public class WorldScreen extends Screen {
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
 
-        var blocks = new ArrayList<>(Blocks.blocks.values());
-
-        Chunk chunk = world.getOrCreateChunk(0, 0);
-        Block block = Blocks.GRASS_BLOCK;
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = 0; y < 4; y++) {
-                    chunk.setBlock(block, x, y, z);
+        for (int x = -100; x < 100; x++) {
+            for (int z = -100; z < 100; z++) {
+                for (int y =1; y < 3; y++) {
+                    world.setBlock(Blocks.DIRT, x, y, z);
                 }
+                world.setBlock(Blocks.GRASS_BLOCK, x, 3, z);
+                world.setBlock(Blocks.BEDROCK, x, 0, z);
             }
         }
-        chunk = world.getOrCreateChunk(0, -1);
-        block = Blocks.CRAFTING_TABLE;
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = 0; y < 4; y++) {
-                    chunk.setBlock(block, x, y, z);
-                }
-            }
-        }
-
-        chunk = world.getOrCreateChunk(-1, -1);
-        block = Blocks.OAK_LOG;
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = 0; y < 4; y++) {
-                    chunk.setBlock(block, x, y, z);
-                }
-            }
-        }
-
-        chunk = world.getOrCreateChunk(-1, 0);
-        block = Blocks.STONE;
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = 0; y < 4; y++) {
-                    chunk.setBlock(block, x, y, z);
-                }
-            }
-        }
-
-        world.setBlock(Blocks.OAK_LEAVES, 0, 5, 0);
 
     }
 
@@ -138,7 +105,7 @@ public class WorldScreen extends Screen {
 
 //        objectRenderer.renderHitbox(camera, entity2.hitbox());
         {
-            Vector3i blockPos = firstPersonController.rayCast();
+            Vector3i blockPos = firstPersonController.rayCast()[0];
             if (blockPos != null) {
                 glDisable(GL_DEPTH_TEST);
                 objectRenderer.renderBlockSelectionBox(camera, blockPos.x, blockPos.y, blockPos.z);

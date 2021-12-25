@@ -12,9 +12,9 @@ import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
 
 import java.lang.Math;
-import java.util.ArrayList;
 import java.util.HashSet;
 
+import static org.joml.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class FirstPersonController extends MinecraftAECore implements Tickable {
@@ -55,22 +55,31 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
     }
 
     public void onMouseButtonChange(int button, boolean pressed) {
+        Vector3i[] blockPos = rayCast();
         if (button == 0 && pressed) {
             if (locked) {
-                Vector3i blockPos = rayCast();
-                if (blockPos != null) {
-                    world.setBlock(Blocks.AIR, blockPos.x, blockPos.y, blockPos.z);
+                if (blockPos[0] != null) {
+                    world.setBlock(Blocks.AIR, blockPos[0].x, blockPos[0].y, blockPos[0].z);
+                }
+            }
+            setLocked(true);
+        }
+        if (button == 1 && pressed) {
+            if (locked) {
+                if (blockPos[1] != null) {
+                    world.setBlock(Blocks.STONE, blockPos[1].x, blockPos[1].y, blockPos[1].z);
                 }
             }
             setLocked(true);
         }
     }
 
-    public Vector3i rayCast() {
+    public Vector3i[] rayCast() {
         int distance = 5;
         Vector3f pos = new Vector3f(camera.position);
         WorldScreen.debugInfo = "Block: ???";
         HashSet<Vector3i> blockPoses = new HashSet<>();
+        Vector3f front = camera.getFront();
         for (int i = 0; i < distance; i += 1) {
             Vector3i blockPos = new Vector3i(world.blockXOf(pos.x), world.blockYOf(pos.y), world.blockZOf(pos.z));
             for (int x = -1; x <= 1; x++) {
@@ -83,22 +92,70 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
                     }
                 }
             }
-            pos.add(new Vector3f(camera.getFront()));
+            pos.add(new Vector3f(front));
         }
 
         Vector3i closestBlock = null;
         float nearest = Float.POSITIVE_INFINITY;
+        Vector2f nearFar = new Vector2f();
         for (Vector3i blockPos : blockPoses) {
-            Vector2f nearFar = new Vector2f();
-            if (Intersectionf.intersectRayAab(camera.position, camera.getFront(), new Vector3f(blockPos), new Vector3f(blockPos).add(1, 1, 1), nearFar)) {
+            if (Intersectionf.intersectRayAab(camera.position, front, new Vector3f(blockPos), new Vector3f(blockPos).add(1, 1, 1), nearFar)) {
                 if (nearFar.x < nearest) {
                     nearest = nearFar.x;
                     closestBlock = blockPos;
                 }
             }
         }
+        Vector3i placeLocation = null;
+        float scale = 1 / 128f;
 
-        return closestBlock;
+        if (closestBlock != null) {
+            nearest = Float.POSITIVE_INFINITY;
+            if (Intersectionf.intersectRayAab(camera.position, front, new Vector3f(closestBlock).add(0, -scale / 2, 0), new Vector3f(closestBlock).add(1, scale, 1), nearFar)) { // Down
+                if (nearFar.x < nearest) {
+                    nearest = nearFar.x;
+                    placeLocation = new Vector3i(closestBlock).add(0, -1, 0);
+                }
+            }
+            if (Intersectionf.intersectRayAab(camera.position, front, new Vector3f(closestBlock).add(0, 1 - scale / 2, 0), new Vector3f(closestBlock).add(1, 1 + scale, 1), nearFar)) { // Up
+                if (nearFar.x < nearest) {
+                    nearest = nearFar.x;
+                    placeLocation = new Vector3i(closestBlock).add(0, 1, 0);
+                }
+            }
+            if (Intersectionf.intersectRayAab(camera.position, front, new Vector3f(closestBlock).add(-scale / 2, 0, 0), new Vector3f(closestBlock).add(scale, 1, 1), nearFar)) { // West
+                if (nearFar.x < nearest) {
+                    nearest = nearFar.x;
+                    placeLocation = new Vector3i(closestBlock).add(-1, 0, 0);
+                }
+            }
+            if (Intersectionf.intersectRayAab(camera.position, front, new Vector3f(closestBlock).add(1 - scale / 2, 0, 0), new Vector3f(closestBlock).add(1 + scale, 1, 1), nearFar)) { // East
+                if (nearFar.x < nearest) {
+                    nearest = nearFar.x;
+                    placeLocation = new Vector3i(closestBlock).add(1, 0, 0);
+                }
+            }
+            if (Intersectionf.intersectRayAab(camera.position, front, new Vector3f(closestBlock).add(0, 0, -scale / 2), new Vector3f(closestBlock).add(1, 1, scale), nearFar)) { // South
+                if (nearFar.x < nearest) {
+                    nearest = nearFar.x;
+                    placeLocation = new Vector3i(closestBlock).add(0, 0, -1);
+                }
+            }
+            if (Intersectionf.intersectRayAab(camera.position, front, new Vector3f(closestBlock).add(0, 0, 1 - scale / 2), new Vector3f(closestBlock).add(1, 1, 1 + scale), nearFar)) { // North
+                if (nearFar.x < nearest) {
+                    placeLocation = new Vector3i(closestBlock).add(0, 0, 1);
+                }
+            }
+        }
+
+        if (closestBlock != null) {
+            WorldScreen.debugInfo = "Block: " + closestBlock.x + " / " + closestBlock.y + " / " + closestBlock.z + " [" + placeLocation + "]";
+
+        }
+        return new Vector3i[]{
+                closestBlock,
+                placeLocation
+        };
     }
 
     public void onMouseMove(double x, double y) {
@@ -134,20 +191,20 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
         if (locked) {
             float speed = (float) (43f * deltaTime);
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_W) == GLFW_PRESS) {
-                entity.velocity().x += (float) (Math.cos(camera.yaw) * speed);
-                entity.velocity().z += (float) (Math.sin(camera.yaw) * speed);
+                entity.velocity().x += (float) (cos(camera.yaw) * speed);
+                entity.velocity().z += (float) (sin(camera.yaw) * speed);
             }
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_S) == GLFW_PRESS) {
-                entity.velocity().x += (float) (-Math.cos(camera.yaw) * speed);
-                entity.velocity().z += (float) (-Math.sin(camera.yaw) * speed);
+                entity.velocity().x += (float) (-cos(camera.yaw) * speed);
+                entity.velocity().z += (float) (-sin(camera.yaw) * speed);
             }
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_A) == GLFW_PRESS) {
-                entity.velocity().x += (float) (-Math.cos(camera.yaw + Math.PI / 2) * speed);
-                entity.velocity().z += (float) (-Math.sin(camera.yaw + Math.PI / 2) * speed);
+                entity.velocity().x += (float) (-cos(camera.yaw + Math.PI / 2) * speed);
+                entity.velocity().z += (float) (-sin(camera.yaw + Math.PI / 2) * speed);
             }
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_D) == GLFW_PRESS) {
-                entity.velocity().x += (float) (Math.cos(camera.yaw + Math.PI / 2) * speed);
-                entity.velocity().z += (float) (Math.sin(camera.yaw + Math.PI / 2) * speed);
+                entity.velocity().x += (float) (cos(camera.yaw + Math.PI / 2) * speed);
+                entity.velocity().z += (float) (sin(camera.yaw + Math.PI / 2) * speed);
             }
 
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
