@@ -1,5 +1,6 @@
 package site.alex_xu.minecraft.client.resource;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import site.alex_xu.minecraft.client.render.Renderer2D;
 import site.alex_xu.minecraft.client.utils.Framebuffer;
 import site.alex_xu.minecraft.client.utils.Texture;
@@ -8,15 +9,22 @@ import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.models.BlockModelDef;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
+
+import static org.lwjgl.opengl.GL11.*;
 
 public final class BlockTextureAtlas extends MinecraftAECore {
     private final HashMap<String, Texture> pathTextureMap = new HashMap<>();
     private final HashMap<String, Rectangle2D.Float> textureBoundMap = new HashMap<>();
     private static BlockTextureAtlas instance = null;
-    private Framebuffer atlasBuffer;
+    private Texture atlas = null;
 
     public static BlockTextureAtlas getInstance() {
         if (instance == null)
@@ -28,8 +36,8 @@ public final class BlockTextureAtlas extends MinecraftAECore {
 
     }
 
-    public Framebuffer getAtlasBuffer() {
-        return atlasBuffer;
+    public Texture getAtlasBuffer() {
+        return atlas;
     }
 
     void load() {
@@ -46,24 +54,41 @@ public final class BlockTextureAtlas extends MinecraftAECore {
             atlasWidth = Math.max(atlasWidth, texture.getWidth());
             atlasHeight += texture.getHeight();
         }
-        atlasBuffer = new Framebuffer(atlasWidth, atlasHeight);
+        BufferedImage atlasBuffer = new BufferedImage(atlasWidth, atlasHeight, BufferedImage.TYPE_4BYTE_ABGR);
         int offset = 0;
-        Renderer2D renderer = atlasBuffer.getRenderer().get2D();
+        Graphics2D g = (Graphics2D) atlasBuffer.getGraphics();
         for (String path : paths) {
-            Texture texture = getTextureFromPath(path);
-            renderer.image(texture, 0, offset);
-            offset += texture.getHeight();
+            Image image;
+            try {
+                image = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(path)));
+                g.drawImage(image, 0, offset, null);
+                offset += image.getHeight(null);
 
-            textureBoundMap.put(
-                    path,
-                    new Rectangle2D.Float(
-                            0, 1 - offset / (float) atlasHeight,
-                            texture.getWidth() / (float) atlasWidth,
-                            texture.getHeight() / (float) atlasHeight
-                    )
-            );
+                textureBoundMap.put(
+                        path,
+                        new Rectangle2D.Float(
+                                0, 1 - offset / (float) atlasHeight,
+                                image.getWidth(null) / (float) atlasWidth,
+                                image.getHeight(null) / (float) atlasHeight
+                        )
+                );
+            } catch (IOException e) {
+                getLogger().warn("Unable load texture from: " + path);
+                e.printStackTrace();
+            }
         }
-        getLogger().info("Generated texture atlas: " + atlasWidth + "x" + atlasHeight);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(atlasBuffer, "PNG", outputStream);
+            atlas = new Texture(outputStream.toByteArray(), GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST);
+            getLogger().info("Generated texture atlas: " + atlasWidth + "x" + atlasHeight);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Unable to generated block texture atlas!");
+        }
+
+
 
     }
 
