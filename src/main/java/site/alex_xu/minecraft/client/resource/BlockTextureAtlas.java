@@ -6,6 +6,7 @@ import site.alex_xu.minecraft.client.utils.Texture;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
+import site.alex_xu.minecraft.server.models.BlockModelDef;
 
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;

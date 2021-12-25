@@ -86,7 +86,7 @@ public class WorldScreen extends Screen {
 
         world.setBlock(Blocks.CRAFTING_TABLE, 0, 3, 0);
         world.setBlock(Blocks.GRASS_BLOCK, 0, 6, 0);
-
+        world.setBlock(Blocks.WATER, 2, 3, 0);
 
     }
 

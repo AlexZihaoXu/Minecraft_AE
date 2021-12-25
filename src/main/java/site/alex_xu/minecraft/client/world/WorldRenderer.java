@@ -9,6 +9,8 @@ import site.alex_xu.minecraft.server.world.World;
 
 import java.util.TreeMap;
 
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
+
 public class WorldRenderer extends MinecraftAECore {
     private final TreeMap<World.ChunkPos, ChunkRenderer> chunkRenderers = new TreeMap<>();
 
@@ -21,8 +23,13 @@ public class WorldRenderer extends MinecraftAECore {
     }
 
     public void render(ModelRenderer renderer, Camera camera) {
+        if (renderer.getShader().hasUniform("time"))
+            renderer.getShader().setFloat("time", (float) glfwGetTime());
         for (ChunkRenderer chunkRenderer : chunkRenderers.values()) {
-            chunkRenderer.render(renderer, camera);
+            chunkRenderer.renderSolid(renderer, camera);
+        }
+        for (ChunkRenderer chunkRenderer : chunkRenderers.values()) {
+            chunkRenderer.renderLiquid(renderer, camera);
         }
     }
 }

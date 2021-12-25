@@ -9,26 +9,32 @@ import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.chunk.ChunkSection;
 import site.alex_xu.minecraft.server.models.BlockModelDef;
 
+import javax.security.auth.callback.Callback;
 import java.awt.geom.Rectangle2D;
 
 public class ChunkSectionMesher extends MinecraftAECore {
     protected ChunkSection chunkSection;
-    protected Model mesh = null;
+    protected Model solidMesh = null;
+    protected Model transparentMesh = null;
 
-    public Model getModel() {
-        return mesh;
+    public Model getSolidMesh() {
+        return solidMesh;
+    }
+
+    public Model getLiquidMesh() {
+        return transparentMesh;
     }
 
     protected abstract static class BlockModelApplier extends BlockModelDef {
-        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, ChunkSection section) {
+        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, ChunkSection section, CancelingTestFunc cancelingTestFunc) {
             for (Face face : self.faceMap.values()) {
-                applyTriangle(self, face, builder, x, y, z, section, true);
-                applyTriangle(self, face, builder, x, y, z, section, false);
+                applyTriangle(self, face, builder, x, y, z, section, true, cancelingTestFunc);
+                applyTriangle(self, face, builder, x, y, z, section, false, cancelingTestFunc);
             }
 
         }
 
-        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, ChunkSection section, boolean firstTriangle) {
+        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, ChunkSection section, boolean firstTriangle, CancelingTestFunc cancelingTestFunc) {
             var v1 = face.v1();
             var v2 = firstTriangle ? face.v2() : face.v3();
             var v3 = firstTriangle ? face.v3() : face.v4();
@@ -57,37 +63,37 @@ public class ChunkSectionMesher extends MinecraftAECore {
                 if (direction == 0) { // North
                     Block block = section.getBlock(x, y, (z - 1));
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().material.isSolid()) {
+                    if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
                 } else if (direction == 1) { // South
                     Block block = section.getBlock(x, y, (z + 1));
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().material.isSolid()) {
+                    if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
                 } else if (direction == 2) { // West
                     Block block = section.getBlock(x - 1, y, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().material.isSolid()) {
+                    if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
                 } else if (direction == 3) { // East
                     Block block = section.getBlock(x + 1, y, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().material.isSolid()) {
+                    if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
                 } else if (direction == 4) { // Top
                     Block block = section.getBlock(x, y + 1, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().material.isSolid()) {
+                    if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
                 } else { // Bottom
                     Block block = section.getBlock(x, y - 1, z);
                     block = block == null ? Blocks.AIR : block;
-                    if (block.settings().material.isSolid()) {
+                    if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
                 }
@@ -110,6 +116,18 @@ public class ChunkSectionMesher extends MinecraftAECore {
                 builder.addFace(a, b, c);
             }
         }
+
+        private interface CancelingTestFunc extends Callback {
+            boolean execute(Block block);
+        }
+
+        public static boolean cancelSolid(Block block) {
+            return block.settings().material.isSolid();
+        }
+
+        public static boolean cancelLiquid(Block block) {
+            return block.settings().material.isLiquid();
+        }
     }
 
     public ChunkSectionMesher(ChunkSection section) {
@@ -118,21 +136,39 @@ public class ChunkSectionMesher extends MinecraftAECore {
     }
 
     public void updateMesh(ChunkSection chunk) {
-        ModelBuilder builder = new ModelBuilder();
-        if (mesh != null) {
-            mesh.free();
+        if (solidMesh != null) {
+            solidMesh.free();
+        }
+        if (transparentMesh != null) {
+            transparentMesh.free();
         }
 
+        ModelBuilder solidBuilder = new ModelBuilder();
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 for (int y = 0; y < 16; y++) {
                     Block block = chunk.getBlock(x, y, z);
                     if (block == Blocks.AIR) continue;
-                    BlockModelApplier.apply(block.modelDef(), builder, x, y, z, chunk);
+                    if (block.settings().material.isLiquid()) continue;
+                    BlockModelApplier.apply(block.modelDef(), solidBuilder, x, y, z, chunk, BlockModelApplier::cancelSolid);
                 }
             }
         }
-        mesh = builder.build();
+        solidMesh = solidBuilder.build();
+
+        ModelBuilder transparentBuilder = new ModelBuilder();
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 16; y++) {
+                    Block block = chunk.getBlock(x, y, z);
+                    if (block == Blocks.AIR) continue;
+                    if (block.settings().material.isLiquid())
+                    BlockModelApplier.apply(block.modelDef(), transparentBuilder, x, y, z, chunk, BlockModelApplier::cancelLiquid);
+                }
+            }
+        }
+        transparentMesh = transparentBuilder.build();
+
     }
 
 }

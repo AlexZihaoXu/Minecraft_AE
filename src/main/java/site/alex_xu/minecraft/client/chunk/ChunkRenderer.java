@@ -20,13 +20,23 @@ public class ChunkRenderer extends MinecraftAECore {
         chunkSectionMeshers[section.getSectionY()] = new ChunkSectionMesher(section);
     }
 
-    public void render(ModelRenderer renderer, Camera camera) {
+    public void renderSolid(ModelRenderer renderer, Camera camera) {
         for (int i = 0; i < 16; i++) {
             if (chunkSectionMeshers[i] == null)
                 continue;
-            Model model = chunkSectionMeshers[i].mesh;
+            Model model = chunkSectionMeshers[i].getSolidMesh();
             model.resetModelMatrix().getModelMatrix().translate(chunk.getX() * 16, 16 * i, chunk.getY() * 16);
             renderer.render(camera, model);
+        }
+    }
+
+    public void renderLiquid(ModelRenderer renderer, Camera camera) {
+        for (int i = 0; i < 16; i++) {
+            if (chunkSectionMeshers[i] == null)
+                continue;
+            Model model = chunkSectionMeshers[i].getLiquidMesh();
+            model.resetModelMatrix().getModelMatrix().translate(chunk.getX() * 16, 16 * i, chunk.getY() * 16);
+            renderer.render(camera, model, 1);
         }
     }
 }

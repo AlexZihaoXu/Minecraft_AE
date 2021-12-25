@@ -27,17 +27,26 @@ public class ModelRenderer extends Renderer {
         return shader;
     }
 
-    public void render(Camera camera, Model model) {
+    public void render(Camera camera, Model model, int mode) {
         getShader().bind();
         glActiveTexture(GL_TEXTURE0);
         BlockTextureAtlas.getInstance().getAtlasBuffer().bind();
         getShader().setInt("texture0", 0);
+        getShader().setInt("mode", mode);
         getShader().setMat4("projMat", false, camera.getMatrix(bindableContext));
         getShader().setMat4("modelMat", false, model.getModelMatrix());
+        if (getShader().hasUniform("texWidth"))
+            getShader().setFloat("texWidth", BlockTextureAtlas.getInstance().getAtlasBuffer().getWidth());
+        if (getShader().hasUniform("texHeight"))
+            getShader().setFloat("texHeight", BlockTextureAtlas.getInstance().getAtlasBuffer().getHeight());
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CW);
         model.draw();
+    }
+
+    public void render(Camera camera, Model model) {
+        render(camera, model, 0);
     }
 }
