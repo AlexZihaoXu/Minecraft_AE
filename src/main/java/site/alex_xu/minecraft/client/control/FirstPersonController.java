@@ -36,7 +36,7 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
     }
 
     private void onKeyChange(long window, int key, int scancode, int action, int mods) {
-        if (key == GLFW_KEY_SPACE && action == GLFW_PRESS && !entity.inAir()) {
+        if (key == GLFW_KEY_SPACE && action == GLFW_PRESS && !entity.inAir() && !entity.isIgnoreGravity()) {
             entity.velocity().y = 9.5f;
         }
     }
@@ -205,6 +205,15 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_D) == GLFW_PRESS) {
                 entity.velocity().x += (float) (cos(camera.yaw + Math.PI / 2) * speed);
                 entity.velocity().z += (float) (sin(camera.yaw + Math.PI / 2) * speed);
+            }
+
+            if (entity.isIgnoreGravity()) {
+                if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_SPACE) == GLFW_PRESS) {
+                    entity.velocity().y += speed;
+                }
+                if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+                    entity.velocity().y -= speed;
+                }
             }
 
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {

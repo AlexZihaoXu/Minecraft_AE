@@ -1,5 +1,6 @@
 package site.alex_xu.minecraft.client.screen.world;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3i;
 import site.alex_xu.minecraft.client.MinecraftClient;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
@@ -8,19 +9,18 @@ import site.alex_xu.minecraft.client.render.Renderer2D;
 import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
+import site.alex_xu.minecraft.client.utils.buffers.ElementBuffer;
+import site.alex_xu.minecraft.client.utils.buffers.VertexArray;
+import site.alex_xu.minecraft.client.utils.buffers.VertexBuffer;
+import site.alex_xu.minecraft.client.utils.shader.Shader;
 import site.alex_xu.minecraft.client.world.WorldRenderer;
 import site.alex_xu.minecraft.core.Minecraft;
-import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
-import site.alex_xu.minecraft.server.chunk.Chunk;
-import site.alex_xu.minecraft.server.collision.Hitbox;
-import site.alex_xu.minecraft.server.entity.Entity;
 import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
 
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-
+import static org.joml.Math.max;
+import static org.joml.Math.min;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -34,6 +34,10 @@ public class WorldScreen extends Screen {
     protected long lastCountTime = System.currentTimeMillis();
     protected int fps = 0;
     protected int frameCount = 0;
+    protected static Shader skyShader;
+    protected static VertexArray skyVao;
+    protected static VertexBuffer skyVbo;
+    protected static ElementBuffer skyEbo;
 
     public Camera getCamera() {
         return camera;
@@ -47,13 +51,36 @@ public class WorldScreen extends Screen {
 
     @Override
     public void onSetup() {
+
+        if (skyShader == null) {
+            skyShader = new Shader()
+                    .addFromResource("assets/shaders/sky.frag")
+                    .addFromResource("assets/shaders/sky.vert")
+                    .link();
+            skyVao = new VertexArray();
+            skyVbo = new VertexBuffer(new float[]{
+                    -1, -1,
+                    -1, +1,
+                    +1, +1,
+                    +1, -1
+            });
+            skyEbo = new ElementBuffer(new int[]{
+                    0, 1, 2,
+                    2, 3, 0
+            });
+            skyVao.configure(skyVbo)
+                    .push(2)
+                    .apply();
+
+        }
+
         camera.yaw = Math.PI / 2;
         camera.position.y = 10;
         world = new World();
         worldRenderer = new WorldRenderer(world);
         player = new PlayerEntity(world);
-        player.position().y = 300;
-        player.velocity().y = -200;
+        player.position().y = 5;
+        player.velocity().y = 0;
         firstPersonController = new FirstPersonController(MinecraftClient.getInstance().getWindow(), camera, world, player);
 
         glEnable(GL_BLEND);
@@ -61,9 +88,9 @@ public class WorldScreen extends Screen {
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
 
-        for (int x = -100; x < 100; x++) {
-            for (int z = -100; z < 100; z++) {
-                for (int y =1; y < 3; y++) {
+        for (int x = -3; x < 3; x++) {
+            for (int z = -3; z < 3; z++) {
+                for (int y = 1; y < 3; y++) {
                     world.setBlock(Blocks.DIRT, x, y, z);
                 }
                 world.setBlock(Blocks.GRASS_BLOCK, x, 3, z);
@@ -85,19 +112,37 @@ public class WorldScreen extends Screen {
         }
     }
 
+    protected void renderSky(RenderContext context) {
+
+        context.clear(0.7f, 0.82f, 1f, 1f);
+
+        skyVao.bind();
+        skyEbo.bind();
+        skyShader.setMat4("projMat", false, camera.getMatrix(context));
+        skyShader.setMat4("modelMat", false,
+                    new Matrix4f().translate(camera.position.x, 0, camera.position.z)
+                );
+        skyShader.setFloat("yOffset", Math.min(camera.position.y - 1f, camera.position.y * 0.5f - 5));
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glDrawElements(GL_TRIANGLES, skyEbo.length(), GL_UNSIGNED_INT, 0);
+        skyShader.setFloat("yOffset", max(50, camera.position.y + 50));
+        glDrawElements(GL_TRIANGLES, skyEbo.length(), GL_UNSIGNED_INT, 0);
+    }
+
     @Override
     public void onRender(RenderContext context, double vdt) {
+
         world.onTick(vdt);
         player.onTick(vdt);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        renderSky(context);
 
         firstPersonController.onTick(vdt);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         // Tick
 //        entity2.onTick(vdt);
         //
 
-        context.getRenderer().clear(0.8f);
         worldRenderer.render(context.getRenderer().get3D(), getCamera());
 
         var objectRenderer = new GameObjectRenderer(context);
