@@ -77,7 +77,6 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
     public Vector3i[] rayCast() {
         int distance = 5;
         Vector3f pos = new Vector3f(camera.position);
-        WorldScreen.debugInfo = "Block: ???";
         HashSet<Vector3i> blockPoses = new HashSet<>();
         Vector3f front = camera.getFront();
         for (int i = 0; i < distance; i += 1) {
@@ -148,10 +147,6 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
             }
         }
 
-        if (closestBlock != null) {
-            WorldScreen.debugInfo = "Block: " + closestBlock.x + " / " + closestBlock.y + " / " + closestBlock.z + " [" + placeLocation + "]";
-
-        }
         return new Vector3i[]{
                 closestBlock,
                 placeLocation

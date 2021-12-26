@@ -6,11 +6,11 @@ uniform float time;
 in vec2 vPos;
 out vec4 FragColor;
 
-const vec3 midDay = vec3(0.72, 0.83, 1);
-const vec3 midSun = vec3(0.78, 0.33, 0.21);
-const vec3 midNight = vec3(0.04, 0.05, 0.08);
+#define midDay vec3(0.72, 0.83, 1)
+#define midSun vec3(0.78, 0.33, 0.21)
+#define midNight vec3(0.04, 0.05, 0.08)
 
-const int midColorCount = 13;
+#define midColorCount 13
 vec3 midColors[midColorCount] = vec3[midColorCount](
 midSun,
 midDay,
@@ -28,11 +28,11 @@ midSun
 );
 
 
-const vec3 upDay = vec3(0.45, 0.7, 1);
-const vec3 upSun = vec3(0.17, 0.27, 0.38);
-const vec3 upNight = vec3(0, 0, 0);
+#define upDay vec3(0.45, 0.7, 1)
+#define upSun vec3(0.17, 0.27, 0.38)
+#define upNight vec3(0, 0, 0)
 
-const int upColorCount = 13;
+#define upColorCount 13
 vec3 upColors[upColorCount] = vec3[upColorCount](
 upSun,
 upDay,
@@ -49,11 +49,11 @@ upNight,
 upSun
 );
 
-const vec3 downDay = vec3(0.16, 0.22, 0.72);
-const vec3 downSun = vec3(0.09, 0.11, 0.33);
-const vec3 downNight = vec3(0.05, 0.05, 0.12);
+#define downDay vec3(0.16, 0.22, 0.72)
+#define downSun vec3(0.09, 0.11, 0.33)
+#define downNight vec3(0.05, 0.05, 0.12)
 
-const int downColorCount = 13;
+#define downColorCount 13
 vec3 downColors[downColorCount] = vec3[downColorCount](
 downSun,
 downDay,
@@ -95,7 +95,7 @@ void main() {
     float multiplier = 1.4;
     if (layer == 1) {
         color = upColor(time);
-//        color = vec3(0.46, 0.71, 1);
+        //        color = vec3(0.46, 0.71, 1);
         multiplier = 1.2;
     } else if (yOffset > -5) {
         color = downColor(time);

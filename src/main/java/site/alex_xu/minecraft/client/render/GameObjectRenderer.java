@@ -17,7 +17,7 @@ public class GameObjectRenderer extends ModelRenderer {
     private static VertexArray vao;
     private static ElementBuffer lineEbo;
     private static ElementBuffer fillEbo;
-    private static Matrix4f modelMat;
+    private Matrix4f modelMat;
     private static Shader shader;
     private float r, g, b, a;
 
@@ -70,22 +70,30 @@ public class GameObjectRenderer extends ModelRenderer {
                     3, 7, 4,
                     3, 4, 0
             });
-            modelMat = new Matrix4f();
         }
+        modelMat = new Matrix4f();
     }
 
+    public Matrix4f getModelMat() {
+        return modelMat;
+    }
+
+    public GameObjectRenderer resetModelMat() {
+        modelMat = new Matrix4f();
+        return this;
+    }
 
     public GameObjectRenderer renderBox(Camera camera, float x, float y, float z, float w, float h, float l, boolean fill) {
         vao.bind();
 
-        modelMat = new Matrix4f().translate(x, y, z).scale(w, h, l);
+        Matrix4f mat = new Matrix4f(modelMat).translate(x, y, z).scale(w, h, l);
 
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
         shader.bind();
         shader.setMat4("projMat", false, camera.getMatrix(bindableContext));
-        shader.setMat4("modelMat", false, modelMat);
+        shader.setMat4("modelMat", false, mat);
         shader.setVec4("color", r, g, b, a);
 
         if (fill) {

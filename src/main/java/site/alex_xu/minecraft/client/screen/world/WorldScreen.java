@@ -45,7 +45,13 @@ public class WorldScreen extends Screen {
     protected static ElementBuffer skyEbo;
     protected static Mesh sunMoonMesh;
     protected static Texture sunTexture;
+    protected static Texture moonTexture;
     protected float time = 0;
+
+    private static final record Star(float pitch, float yaw) {
+    }
+
+    private static Star[] stars = null;
 
     public Camera getCamera() {
         return camera;
@@ -91,8 +97,16 @@ public class WorldScreen extends Screen {
 
 
                 sunTexture = new Texture(ResourceManager.getInstance().readBytesFromResource("assets/textures/environment/sun.png"));
+                moonTexture = new Texture(ResourceManager.getInstance().readBytesFromResource("assets/textures/environment/moon.png"));
             }
 
+            stars = new Star[256];
+            for (int i = 0; i < stars.length; i++) {
+                stars[i] = new Star(
+                        (float) (Math.random() * Math.random() * PI * 1) * (Math.random() > 0.5 ? -1 : 1),
+                        (float) (Math.random() * PI * 2)
+                );
+            }
         }
 
         camera.yaw = Math.PI / 2;
@@ -193,7 +207,39 @@ public class WorldScreen extends Screen {
         sunMoonMesh.getModelMatrix().rotateY((float) -PI / 2);
         glBlendFunc(GL_ONE, GL_ONE);
         context.getRenderer().get3D().render(camera, sunMoonMesh, 0, sunTexture);
+        sunMoonMesh.resetModelMatrix();
+        sunMoonMesh.getModelMatrix().translate(camera.position);
+        sunMoonMesh.getModelMatrix().scale(100);
+        sunMoonMesh.getModelMatrix().rotateZ((float) ((time * Math.PI * 2) + Math.PI));
+        sunMoonMesh.getModelMatrix().translate(5, 0, 0);
+        sunMoonMesh.getModelMatrix().scale(2);
+        sunMoonMesh.getModelMatrix().rotateY((float) -PI / 2);
+        context.getRenderer().get3D().render(camera, sunMoonMesh, 0, moonTexture);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // Stars
+        if (!(0.05f < time && time < 0.45f)) {
+            GameObjectRenderer renderer = new GameObjectRenderer(context);
+            float a = 0;
+            if (time > 0.45) {
+                a = (time - 0.45f) / 0.55f;
+            } else if (time < 0.05) {
+                a = 1 - time / 0.05f;
+            }
+            renderer.color(1, 1, 1, a);
+            for (Star star : stars) {
+                renderer.resetModelMat();
+
+                float distance = 250;
+                renderer.getModelMat().translate(camera.position);
+                renderer.getModelMat().rotateZ((float) (time * PI * 2));
+                renderer.getModelMat().rotateY(star.yaw);
+                renderer.getModelMat().rotateZ((star.pitch));
+                renderer.getModelMat().translate(distance, 0, 0);
+                renderer.renderBox(camera, 0, 0, 0, 1, 1, 1, true);
+            }
+        }
+        debugInfo = "Time: " + String.format("%.2f %%", time * 100);
     }
 
     @Override
