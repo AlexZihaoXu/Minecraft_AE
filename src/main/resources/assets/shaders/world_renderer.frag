@@ -2,6 +2,7 @@
 
 in vec4 vColor;
 in vec2 texCoord;
+in float zIndex;
 
 uniform sampler2D texture0;
 uniform int mode;

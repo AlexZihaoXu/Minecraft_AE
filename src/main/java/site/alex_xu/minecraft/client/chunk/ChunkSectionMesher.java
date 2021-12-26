@@ -1,7 +1,7 @@
 package site.alex_xu.minecraft.client.chunk;
 
-import site.alex_xu.minecraft.client.model.Model;
-import site.alex_xu.minecraft.client.model.ModelBuilder;
+import site.alex_xu.minecraft.client.model.Mesh;
+import site.alex_xu.minecraft.client.model.MeshBuilder;
 import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
@@ -14,19 +14,19 @@ import java.awt.geom.Rectangle2D;
 
 public class ChunkSectionMesher extends MinecraftAECore {
     protected ChunkSection chunkSection;
-    protected Model solidMesh = null;
-    protected Model transparentMesh = null;
+    protected Mesh solidMesh = null;
+    protected Mesh transparentMesh = null;
 
-    public Model getSolidMesh() {
+    public Mesh getSolidMesh() {
         return solidMesh;
     }
 
-    public Model getLiquidMesh() {
+    public Mesh getLiquidMesh() {
         return transparentMesh;
     }
 
     protected abstract static class BlockModelApplier extends BlockModelDef {
-        public static void apply(BlockModelDef self, ModelBuilder builder, int x, int y, int z, ChunkSection section, CancelingTestFunc cancelingTestFunc) {
+        public static void apply(BlockModelDef self, MeshBuilder builder, int x, int y, int z, ChunkSection section, CancelingTestFunc cancelingTestFunc) {
             for (Face face : self.faceMap.values()) {
                 applyTriangle(self, face, builder, x, y, z, section, true, cancelingTestFunc);
                 applyTriangle(self, face, builder, x, y, z, section, false, cancelingTestFunc);
@@ -34,7 +34,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
 
         }
 
-        private static void applyTriangle(BlockModelDef self, Face face, ModelBuilder builder, int x, int y, int z, ChunkSection section, boolean firstTriangle, CancelingTestFunc cancelingTestFunc) {
+        private static void applyTriangle(BlockModelDef self, Face face, MeshBuilder builder, int x, int y, int z, ChunkSection section, boolean firstTriangle, CancelingTestFunc cancelingTestFunc) {
             var v1 = face.v1();
             var v2 = firstTriangle ? face.v2() : face.v3();
             var v3 = firstTriangle ? face.v3() : face.v4();
@@ -143,7 +143,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
             transparentMesh.free();
         }
 
-        ModelBuilder solidBuilder = new ModelBuilder();
+        MeshBuilder solidBuilder = new MeshBuilder();
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 for (int y = 0; y < 16; y++) {
@@ -156,7 +156,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
         }
         solidMesh = solidBuilder.build();
 
-        ModelBuilder transparentBuilder = new ModelBuilder();
+        MeshBuilder transparentBuilder = new MeshBuilder();
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 for (int y = 0; y < 16; y++) {

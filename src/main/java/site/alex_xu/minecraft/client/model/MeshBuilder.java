@@ -6,11 +6,9 @@ import site.alex_xu.minecraft.client.utils.buffers.VertexBuffer;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.TreeMap;
 
-public class ModelBuilder extends MinecraftAECore {
+public class MeshBuilder extends MinecraftAECore {
     public static class Vertex {
         float x, y, z, r, g, b, a, tx, ty;
 
@@ -63,7 +61,7 @@ public class ModelBuilder extends MinecraftAECore {
     protected ArrayList<Float> vertexBuffer = new ArrayList<>(); // Future VBO
     protected ArrayList<Integer> indexBuffer = new ArrayList<>(); // Future EBO
 
-    public ModelBuilder() {
+    public MeshBuilder() {
     }
 
     /**
@@ -96,7 +94,7 @@ public class ModelBuilder extends MinecraftAECore {
      *           Add a triangle face based on the 3 vertices provided
      *           NOTE: order must be clockwise!
      */
-    public ModelBuilder addFace(int v1, int v2, int v3) {
+    public MeshBuilder addFace(int v1, int v2, int v3) {
         indexBuffer.add(v1);
         indexBuffer.add(v2);
         indexBuffer.add(v3);
@@ -111,13 +109,13 @@ public class ModelBuilder extends MinecraftAECore {
      *           Add a quad face based on the 4 vertices provided
      *           NOTE: order must be clockwise!
      */
-    public ModelBuilder addFace(int v1, int v2, int v3, int v4) {
+    public MeshBuilder addFace(int v1, int v2, int v3, int v4) {
         addFace(v1, v2, v3);
         addFace(v1, v3, v4);
         return this;
     }
 
-    public Model build() {
+    public Mesh build() {
         VertexArray vao = new VertexArray();
 
         float[] vboData = new float[vertexBuffer.size()];
@@ -138,6 +136,6 @@ public class ModelBuilder extends MinecraftAECore {
                 .push(2) // tx, ty
                 .apply();
 
-        return new Model(vao, vbo, ebo);
+        return new Mesh(vao, vbo, ebo);
     }
 }

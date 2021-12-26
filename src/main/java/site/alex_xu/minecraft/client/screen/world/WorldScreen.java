@@ -1,14 +1,20 @@
 package site.alex_xu.minecraft.client.screen.world;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.joml.Vector3i;
 import site.alex_xu.minecraft.client.MinecraftClient;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
+import site.alex_xu.minecraft.client.model.Mesh;
+import site.alex_xu.minecraft.client.model.MeshBuilder;
 import site.alex_xu.minecraft.client.render.GameObjectRenderer;
 import site.alex_xu.minecraft.client.render.Renderer2D;
 import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
+import site.alex_xu.minecraft.client.resource.ResourceManager;
 import site.alex_xu.minecraft.client.screen.Screen;
 import site.alex_xu.minecraft.client.utils.RenderContext;
+import site.alex_xu.minecraft.client.utils.Texture;
 import site.alex_xu.minecraft.client.utils.buffers.ElementBuffer;
 import site.alex_xu.minecraft.client.utils.buffers.VertexArray;
 import site.alex_xu.minecraft.client.utils.buffers.VertexBuffer;
@@ -19,8 +25,7 @@ import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
 
-import static org.joml.Math.max;
-import static org.joml.Math.min;
+import static org.joml.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -38,6 +43,9 @@ public class WorldScreen extends Screen {
     protected static VertexArray skyVao;
     protected static VertexBuffer skyVbo;
     protected static ElementBuffer skyEbo;
+    protected static Mesh sunMoonMesh;
+    protected static Texture sunTexture;
+    protected float time = 0;
 
     public Camera getCamera() {
         return camera;
@@ -72,6 +80,19 @@ public class WorldScreen extends Screen {
                     .push(2)
                     .apply();
 
+            {
+                MeshBuilder builder = new MeshBuilder();
+                int v1 = builder.vertex(-0.5f, -0.5f, 0, 1, 1, 1, 1, 0, 0);
+                int v2 = builder.vertex(-0.5f, 0.5f, 0, 1, 1, 1, 1, 0, 1);
+                int v3 = builder.vertex(0.5f, 0.5f, 0, 1, 1, 1, 1, 1, 1);
+                int v4 = builder.vertex(0.5f, -0.5f, 0, 1, 1, 1, 1, 1, 0);
+                builder.addFace(v1, v2, v3, v4);
+                sunMoonMesh = builder.build();
+
+
+                sunTexture = new Texture(ResourceManager.getInstance().readBytesFromResource("assets/textures/environment/sun.png"));
+            }
+
         }
 
         camera.yaw = Math.PI / 2;
@@ -88,8 +109,8 @@ public class WorldScreen extends Screen {
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
 
-        for (int x = -3; x < 3; x++) {
-            for (int z = -3; z < 3; z++) {
+        for (int x = -30; x < 30; x++) {
+            for (int z = -30; z < 30; z++) {
                 for (int y = 1; y < 3; y++) {
                     world.setBlock(Blocks.DIRT, x, y, z);
                 }
@@ -113,21 +134,66 @@ public class WorldScreen extends Screen {
     }
 
     protected void renderSky(RenderContext context) {
+        time = (float) (glfwGetTime() / 20) % 1.0f;
+        {
+            Vector3f day = new Vector3f(0.72f, 0.83f, 1);
+            Vector3f sun = new Vector3f(0.78f, 0.33f, 0.21f);
+            Vector3f night = new Vector3f(0.04f, 0.05f, 0.08f);
 
-        context.clear(0.7f, 0.82f, 1f, 1f);
+            Vector3f[] colors = new Vector3f[]{
+                    sun,
+                    day,
+                    day,
+                    day,
+                    day,
+                    day,
+                    sun,
+                    night,
+                    night,
+                    night,
+                    night,
+                    night,
+                    sun
+            };
+            int i = (int) (time * (colors.length - 1));
+            float r = (time - i / (float) (colors.length - 1)) * (colors.length - 1);
+            Vector3f a = colors[i];
+            Vector3f b = colors[i + 1];
+            Vector3d color = new Vector3d(
+                    a.x * a.x * (1.0 - r) + b.x * b.x * (r),
+                    a.y * a.y * (1.0 - r) + b.y * b.y * (r),
+                    a.z * a.z * (1.0 - r) + b.z * b.z * (r)
+            );
+
+            context.clear((float) sqrt(color.x), (float) sqrt(color.y), (float) sqrt(color.z), 1f);
+        }
 
         skyVao.bind();
         skyEbo.bind();
+        skyShader.setFloat("time", time);
         skyShader.setMat4("projMat", false, camera.getMatrix(context));
         skyShader.setMat4("modelMat", false,
-                    new Matrix4f().translate(camera.position.x, 0, camera.position.z)
-                );
+                new Matrix4f().translate(camera.position.x, 0, camera.position.z)
+        );
         skyShader.setFloat("yOffset", Math.min(camera.position.y - 1f, camera.position.y * 0.5f - 5));
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
+        skyShader.setInt("layer", 0);
         glDrawElements(GL_TRIANGLES, skyEbo.length(), GL_UNSIGNED_INT, 0);
         skyShader.setFloat("yOffset", max(50, camera.position.y + 50));
+        skyShader.setInt("layer", 1);
         glDrawElements(GL_TRIANGLES, skyEbo.length(), GL_UNSIGNED_INT, 0);
+
+        sunMoonMesh.resetModelMatrix();
+        sunMoonMesh.getModelMatrix().translate(camera.position);
+        sunMoonMesh.getModelMatrix().scale(100);
+        sunMoonMesh.getModelMatrix().rotateZ((float) (time * Math.PI * 2));
+        sunMoonMesh.getModelMatrix().translate(5, 0, 0);
+        sunMoonMesh.getModelMatrix().scale(2);
+        sunMoonMesh.getModelMatrix().rotateY((float) -PI / 2);
+        glBlendFunc(GL_ONE, GL_ONE);
+        context.getRenderer().get3D().render(camera, sunMoonMesh, 0, sunTexture);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     @Override

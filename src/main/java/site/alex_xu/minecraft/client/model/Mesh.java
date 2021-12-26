@@ -8,20 +8,20 @@ import site.alex_xu.minecraft.core.MinecraftAECore;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public class Model extends MinecraftAECore {
+public class Mesh extends MinecraftAECore {
     protected VertexArray vao;
     protected VertexBuffer vbo;
     protected ElementBuffer ebo;
     protected Matrix4f modelMatrix;
 
-    protected Model(VertexArray vao, VertexBuffer vbo, ElementBuffer ebo) {
+    protected Mesh(VertexArray vao, VertexBuffer vbo, ElementBuffer ebo) {
         this.vao = vao;
         this.vbo = vbo;
         this.ebo = ebo;
         resetModelMatrix();
     }
 
-    public Model resetModelMatrix() {
+    public Mesh resetModelMatrix() {
         modelMatrix = new Matrix4f(
                 1, 0, 0, 0,
                 0, 1, 0, 0,

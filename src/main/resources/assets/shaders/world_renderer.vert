@@ -9,9 +9,11 @@ uniform mat4 modelMat;
 
 out vec4 vColor;
 out vec2 texCoord;
+out float zIndex;
 
 void main() {
     vColor = aColor;
     texCoord = aTexCoord;
     gl_Position = projMat * modelMat * vec4(aPos, 1.0);
+    zIndex = gl_Position.z;
 }

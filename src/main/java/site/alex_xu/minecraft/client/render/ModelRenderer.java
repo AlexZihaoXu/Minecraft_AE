@@ -1,9 +1,10 @@
 package site.alex_xu.minecraft.client.render;
 
-import site.alex_xu.minecraft.client.model.Model;
+import site.alex_xu.minecraft.client.model.Mesh;
 import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
 import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.utils.BindableContext;
+import site.alex_xu.minecraft.client.utils.ImageType;
 import site.alex_xu.minecraft.client.utils.shader.Shader;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -27,10 +28,10 @@ public class ModelRenderer extends Renderer {
         return shader;
     }
 
-    public void render(Camera camera, Model model, int mode) {
+    public void render(Camera camera, Mesh model, int mode, ImageType imageType) {
         getShader().bind();
         glActiveTexture(GL_TEXTURE0);
-        BlockTextureAtlas.getInstance().getAtlasBuffer().bind();
+        imageType.bind();
         getShader().setInt("texture0", 0);
         getShader().setInt("mode", mode);
         getShader().setMat4("projMat", false, camera.getMatrix(bindableContext));
@@ -46,7 +47,11 @@ public class ModelRenderer extends Renderer {
         model.draw();
     }
 
-    public void render(Camera camera, Model model) {
-        render(camera, model, 0);
+    public void render(Camera camera, Mesh model) {
+        render(camera, model, 0, BlockTextureAtlas.getInstance().getAtlasBuffer());
+    }
+
+    public void render(Camera camera, Mesh model, int mode) {
+        render(camera, model, mode, BlockTextureAtlas.getInstance().getAtlasBuffer());
     }
 }
