@@ -9,6 +9,7 @@ import site.alex_xu.minecraft.client.control.FirstPersonController;
 import site.alex_xu.minecraft.client.model.Mesh;
 import site.alex_xu.minecraft.client.model.MeshBuilder;
 import site.alex_xu.minecraft.client.render.GameObjectRenderer;
+import site.alex_xu.minecraft.client.render.ModelRenderer;
 import site.alex_xu.minecraft.client.render.Renderer2D;
 import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.resource.ResourceManager;
@@ -133,6 +134,105 @@ public class WorldScreen extends Screen {
             }
         }
 
+        {
+            world.setBlock(Blocks.OAK_LOG, 3, 4, 5);
+            world.setBlock(Blocks.OAK_LOG, 3, 5, 5);
+            world.setBlock(Blocks.OAK_LOG, 3, 6, 5);
+            world.setBlock(Blocks.OAK_LOG, 3, 7, 5);
+            world.setBlock(Blocks.OAK_LOG, 3, 4, 10);
+            world.setBlock(Blocks.OAK_LOG, 3, 5, 10);
+            world.setBlock(Blocks.OAK_LOG, 3, 6, 10);
+            world.setBlock(Blocks.OAK_LOG, 3, 7, 10);
+            world.setBlock(Blocks.OAK_LOG, -2, 4, 5);
+            world.setBlock(Blocks.OAK_LOG, -2, 5, 5);
+            world.setBlock(Blocks.OAK_LOG, -2, 6, 5);
+            world.setBlock(Blocks.OAK_LOG, -2, 7, 5);
+            world.setBlock(Blocks.OAK_LOG, -2, 4, 10);
+            world.setBlock(Blocks.OAK_LOG, -2, 5, 10);
+            world.setBlock(Blocks.OAK_LOG, -2, 6, 10);
+            world.setBlock(Blocks.OAK_LOG, -2, 7, 10);
+            world.setBlock(Blocks.OAK_LOG, 2, 7, 5);
+            world.setBlock(Blocks.OAK_LOG, 1, 7, 5);
+            world.setBlock(Blocks.OAK_LOG, 0, 7, 5);
+            world.setBlock(Blocks.OAK_LOG, -1, 7, 5);
+            world.setBlock(Blocks.OAK_LOG, -2, 7, 9);
+            world.setBlock(Blocks.OAK_LOG, -2, 7, 8);
+            world.setBlock(Blocks.OAK_LOG, -2, 7, 7);
+            world.setBlock(Blocks.OAK_LOG, -2, 7, 6);
+            world.setBlock(Blocks.OAK_LOG, 2, 7, 10);
+            world.setBlock(Blocks.OAK_LOG, 2, 7, 9);
+            world.setBlock(Blocks.OAK_LOG, 1, 7, 10);
+            world.setBlock(Blocks.OAK_LOG, 0, 7, 10);
+            world.setBlock(Blocks.OAK_LOG, -1, 7, 10);
+            world.setBlock(Blocks.OAK_LOG, 3, 7, 9);
+            world.setBlock(Blocks.OAK_LOG, 3, 7, 8);
+            world.setBlock(Blocks.OAK_LOG, 3, 7, 7);
+            world.setBlock(Blocks.OAK_LOG, 3, 7, 6);
+            world.setBlock(Blocks.OAK_LOG, 1, 7, 9);
+            world.setBlock(Blocks.OAK_LOG, 2, 7, 8);
+            world.setBlock(Blocks.OAK_LOG, 2, 7, 6);
+            world.setBlock(Blocks.OAK_LOG, 2, 7, 7);
+            world.setBlock(Blocks.OAK_LOG, 1, 7, 6);
+            world.setBlock(Blocks.OAK_LOG, 1, 7, 7);
+            world.setBlock(Blocks.OAK_LOG, 1, 7, 8);
+            world.setBlock(Blocks.OAK_LOG, 0, 7, 9);
+            world.setBlock(Blocks.OAK_LOG, -1, 7, 9);
+            world.setBlock(Blocks.OAK_LOG, 0, 7, 8);
+            world.setBlock(Blocks.OAK_LOG, -1, 7, 8);
+            world.setBlock(Blocks.OAK_LOG, -1, 7, 7);
+            world.setBlock(Blocks.OAK_LOG, 0, 7, 7);
+            world.setBlock(Blocks.OAK_LOG, 0, 7, 6);
+            world.setBlock(Blocks.OAK_LOG, -1, 7, 6);
+        }
+        {
+            world.setBlock(Blocks.OAK_PLANKS, 3, 4, 6);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 5, 6);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 6, 6);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 4, 7);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 5, 7);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 6, 7);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 4, 9);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 4, 8);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 5, 9);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 5, 8);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 6, 9);
+            world.setBlock(Blocks.OAK_PLANKS, 3, 6, 8);
+            world.setBlock(Blocks.OAK_PLANKS, 2, 4, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 2, 5, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 1, 4, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 1, 5, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 2, 6, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 1, 6, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 0, 4, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 0, 5, 10);
+            world.setBlock(Blocks.OAK_PLANKS, 0, 6, 10);
+            world.setBlock(Blocks.OAK_PLANKS, -1, 4, 10);
+            world.setBlock(Blocks.OAK_PLANKS, -1, 5, 10);
+            world.setBlock(Blocks.OAK_PLANKS, -1, 6, 10);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 4, 9);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 4, 8);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 4, 7);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 4, 6);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 5, 9);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 5, 8);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 5, 7);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 5, 6);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 6, 9);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 6, 8);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 6, 7);
+            world.setBlock(Blocks.OAK_PLANKS, -2, 6, 6);
+            world.setBlock(Blocks.OAK_PLANKS, 2, 4, 5);
+            world.setBlock(Blocks.OAK_PLANKS, 2, 5, 5);
+            world.setBlock(Blocks.OAK_PLANKS, 2, 6, 5);
+            world.setBlock(Blocks.OAK_PLANKS, -1, 4, 5);
+            world.setBlock(Blocks.OAK_PLANKS, -1, 5, 5);
+            world.setBlock(Blocks.OAK_PLANKS, -1, 6, 5);
+            world.setBlock(Blocks.OAK_PLANKS, 0, 6, 5);
+            world.setBlock(Blocks.OAK_PLANKS, 1, 6, 5);
+            world.setBlock(Blocks.OAK_PLANKS, 0, 4, 5);
+            world.setBlock(Blocks.OAK_PLANKS, 0, 5, 5);
+        }
+        world.setBlock(Blocks.CRAFTING_TABLE, 0, 4, 7);
     }
 
     @Override
@@ -148,7 +248,7 @@ public class WorldScreen extends Screen {
     }
 
     protected void renderSky(RenderContext context) {
-        time = (float) (glfwGetTime() / 20) % 1.0f;
+        time = world.getTime();
         {
             Vector3f day = new Vector3f(0.72f, 0.83f, 1);
             Vector3f sun = new Vector3f(0.78f, 0.33f, 0.21f);

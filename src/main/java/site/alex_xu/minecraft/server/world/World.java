@@ -15,7 +15,11 @@ public class World extends MinecraftAECore {
 
     private final HashSet<ChunkCreationCallbackI> chunkCreationCallbacks = new HashSet<>();
 
+    private float time = 0;
+
     public void onTick(double deltaTime) {
+        time += deltaTime / 60 / 20;
+        time %= 1.0;
         for (Chunk chunk : chunks.values()) {
             chunk.onTick(deltaTime);
         }
@@ -41,6 +45,10 @@ public class World extends MinecraftAECore {
 
     public Block getBlock(double x, double y, double z) {
         return getBlock((float) x, (float) y, (float) z);
+    }
+
+    public float getTime() {
+        return time;
     }
 
     public record ChunkPos(int x, int y) implements Comparable<ChunkPos> {

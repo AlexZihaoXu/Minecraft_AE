@@ -10,6 +10,7 @@ import java.util.HashSet;
 
 public class ChunkSection extends MinecraftAECore implements Tickable {
     private final Block[][][] blocks = new Block[16][16][16];
+    private final short[][][] lightLevels = new short[16][16][16];
     private final HashSet<ChunkEventCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
     private final HashSet<ChunkEventCallbackI> chunkDisposeCallbackIs = new HashSet<>();
     private boolean requiresModelUpdate = false;
@@ -112,6 +113,14 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         }
         Block block = blocks[x][z][y];
         return block == null ? Blocks.AIR : block;
+    }
+
+    public short getLightLevel(int x, int y, int z) {
+        return (short) Math.max(1, lightLevels[x][z][y]);
+    }
+
+    public void setLightLevel(short level, int x, int y, int z) {
+        lightLevels[x][z][y] = level;
     }
 
     protected void modelUpdate() {

@@ -13,9 +13,15 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 public class WorldRenderer extends MinecraftAECore {
     private final TreeMap<World.ChunkPos, ChunkRenderer> chunkRenderers = new TreeMap<>();
+    private final World world;
 
     public WorldRenderer(World world) {
+        this.world = world;
         world.registerChunkCreationCallback(this::onChunkCreation);
+    }
+
+    public World getWorld() {
+        return world;
     }
 
     public void onChunkCreation(World world, Chunk chunk) {
@@ -23,8 +29,10 @@ public class WorldRenderer extends MinecraftAECore {
     }
 
     public void render(ModelRenderer renderer, Camera camera) {
+        if (renderer.getShader().hasUniform("animationTime"))
+            renderer.getShader().setFloat("animationTime", (float) glfwGetTime());
         if (renderer.getShader().hasUniform("time"))
-            renderer.getShader().setFloat("time", (float) glfwGetTime());
+            renderer.getShader().setFloat("time", (float) world.getTime());
         for (ChunkRenderer chunkRenderer : chunkRenderers.values()) {
             chunkRenderer.renderSolid(renderer, camera);
         }

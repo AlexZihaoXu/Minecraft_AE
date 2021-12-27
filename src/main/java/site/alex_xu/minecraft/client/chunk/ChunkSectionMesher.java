@@ -6,6 +6,7 @@ import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
+import site.alex_xu.minecraft.server.chunk.Chunk;
 import site.alex_xu.minecraft.server.chunk.ChunkSection;
 import site.alex_xu.minecraft.server.models.BlockModelDef;
 
@@ -26,6 +27,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
     }
 
     protected abstract static class BlockModelApplier extends BlockModelDef {
+
         public static void apply(BlockModelDef self, MeshBuilder builder, int x, int y, int z, ChunkSection section, CancelingTestFunc cancelingTestFunc) {
             for (Face face : self.faceMap.values()) {
                 applyTriangle(self, face, builder, x, y, z, section, true, cancelingTestFunc);
@@ -57,6 +59,8 @@ public class ChunkSectionMesher extends MinecraftAECore {
             } else {
                 brightness = 0.4f;
             }
+
+            brightness *= ((section.getLightLevel(x, y, z)) / 16f);
 
             boolean canceled = false;
             if (direction != -1) {
@@ -163,7 +167,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
                     Block block = chunk.getBlock(x, y, z);
                     if (block == Blocks.AIR) continue;
                     if (block.settings().material.isLiquid())
-                    BlockModelApplier.apply(block.modelDef(), transparentBuilder, x, y, z, chunk, BlockModelApplier::cancelLiquid);
+                        BlockModelApplier.apply(block.modelDef(), transparentBuilder, x, y, z, chunk, BlockModelApplier::cancelLiquid);
                 }
             }
         }
