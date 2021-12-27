@@ -14,8 +14,13 @@ uniform float time;
 out vec4 FragColor;
 
 void main() {
+    float shadow = vColor.x;
+    float blockLight = vColor.y;
+    float envLight = vColor.z * 0.8 + 0.2;
+
     float tx = texCoord.x;
     float ty = texCoord.y;
+
     if (mode == 1) { // Water
         tx /= 64;
         tx += float(mod(int(animationTime * 15), 64)) * (16.0F / texWidth);
@@ -25,14 +30,14 @@ void main() {
         discard;
     }
 
-    float dayLight = max(0.15, pow(sin(time * 3.14159265 * 2), 0.2));
+    float dayLight = max(0.15, pow(sin(time * 3.14159265 * 2), 0.4));
 
-    vec4 light = vec4(
-        max(vColor.r, dayLight),
-        max(vColor.g, dayLight),
-        max(vColor.b, dayLight),
-        max(vColor.a, dayLight)
+    vec4 lightColor = vec4(
+        max(blockLight, envLight * dayLight) * shadow,
+        max(blockLight, envLight * dayLight) * shadow,
+        max(blockLight, envLight * dayLight) * shadow,
+        1
     );
 
-    FragColor = color * light;
+    FragColor = color * lightColor;
 }

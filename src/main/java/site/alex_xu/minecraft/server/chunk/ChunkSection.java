@@ -1,16 +1,80 @@
 package site.alex_xu.minecraft.server.chunk;
 
+import org.joml.Vector3i;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.core.Tickable;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
 
 import javax.security.auth.callback.Callback;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.TreeSet;
+
+import static org.joml.Math.max;
+
+class LightTraveler {
+    public boolean[][][] visited = new boolean[16][16][16];
+    public ChunkSection section;
+
+    public LightTraveler(ChunkSection section) {
+        this.section = section;
+    }
+
+    public boolean canProceed(int x, int y, int z) {
+        if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0) {
+            return false;
+        }
+        if (section.getBlock(x, y, z).settings().material.blocksLight())
+            return false;
+        return !visited[x][y][z];
+    }
+
+    public void markVisited(int x, int y, int z) {
+        visited[x][y][z] = true;
+    }
+
+    public void visit(int x, int y, int z) {
+        if (canProceed(x, y, z)) {
+            markVisited(x, y, z);
+
+
+            int level = section.getEnvironmentLightLevel(x, y + 1, z);
+            level = max(level, section.getEnvironmentLightLevel(x, y - 1, z));
+            level = max(level, section.getEnvironmentLightLevel(x + 1, y, z));
+            level = max(level, section.getEnvironmentLightLevel(x - 1, y, z));
+            level = max(level, section.getEnvironmentLightLevel(x, y, z + 1));
+            level = max(level, section.getEnvironmentLightLevel(x, y, z - 1));
+
+            section.setEnvironmentLightLevel(max(section.getEnvironmentLightLevel(x, y, z), level - 1), x, y, z);
+
+            visit(x, y + 1, z);
+            visit(x, y - 1, z);
+            visit(x - 1, y, z);
+            visit(x + 1, y, z);
+            visit(x, y, z + 1);
+            visit(x, y, z - 1);
+        }
+    }
+
+    public void visitRest() {
+        for (int x = 0; x < 16; x++) {
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    if (visited[x][y][z]) {
+                        continue;
+                    }
+                    visit(x, y, z);
+                }
+            }
+        }
+    }
+}
 
 public class ChunkSection extends MinecraftAECore implements Tickable {
     private final Block[][][] blocks = new Block[16][16][16];
-    private final short[][][] lightLevels = new short[16][16][16];
+    private final int[][][] blockLightLevels = new int[16][16][16];
+    private int[][][] envLightLevels = new int[16][16][16];
     private final HashSet<ChunkEventCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
     private final HashSet<ChunkEventCallbackI> chunkDisposeCallbackIs = new HashSet<>();
     private boolean requiresModelUpdate = false;
@@ -115,15 +179,80 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         return block == null ? Blocks.AIR : block;
     }
 
-    public short getLightLevel(int x, int y, int z) {
-        return (short) Math.max(1, lightLevels[x][z][y]);
+    public int getBlockLightLevel(int x, int y, int z) {
+        if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0) {
+            var world = getChunk().getWorld();
+            var originX = getChunk().getX() * 16;
+            var originY = sectionY * 16;
+            var originZ = getChunk().getY() * 16;
+            return world.getBlockLight(originX + x, originY + y, originZ + z);
+        }
+        return Math.max(0, blockLightLevels[x][z][y]);
     }
 
-    public void setLightLevel(short level, int x, int y, int z) {
-        lightLevels[x][z][y] = level;
+    public void setBlockLightLevel(int level, int x, int y, int z) {
+
+        blockLightLevels[x][z][y] = level;
+    }
+
+    public int getEnvironmentLightLevel(int x, int y, int z) {
+        if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0) {
+            var world = getChunk().getWorld();
+            var originX = getChunk().getX() * 16;
+            var originY = sectionY * 16;
+            var originZ = getChunk().getY() * 16;
+            return world.getEnvironmentLight(originX + x, originY + y, originZ + z);
+        }
+        return Math.max(0, envLightLevels[x][z][y]);
+    }
+
+    public void setEnvironmentLightLevel(int level, int x, int y, int z) {
+        envLightLevels[x][z][y] = level;
+    }
+
+    public void calculateEnvironmentLight() {
+
+        ChunkSection upSection = null;
+
+        envLightLevels = new int[16][16][16];
+
+        for (int i = sectionY + 1; i < 16; i++) {
+            if (chunk.hasSection(i)) {
+                upSection = chunk.getOrCreateChunkSection(i);
+                break;
+            }
+        }
+
+        ArrayList<Vector3i> fullLights = new ArrayList<>();
+
+        if (upSection == null) {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int y = 15; y >= 0; y--) {
+                        if (getBlock(x, y, z).settings().material.blocksLight()) {
+                            break;
+                        }
+                        setEnvironmentLightLevel(15, x, y, z);
+                        fullLights.add(new Vector3i(x, y, z));
+                    }
+                }
+            }
+        }
+
+        LightTraveler traveler = new LightTraveler(this);
+        for (Vector3i lightPos : fullLights) {
+            traveler.visit(lightPos.x, lightPos.y, lightPos.z);
+        }
+        traveler.visitRest();
+
+    }
+
+    public int getLightLevelAt(int x, int y, int z) {
+        return max(getBlockLightLevel(x, y, z), getEnvironmentLightLevel(x, y, z));
     }
 
     protected void modelUpdate() {
+        calculateEnvironmentLight();
         for (ChunkEventCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
             chunkModelUpdateCallbackI.execute(this);
         }

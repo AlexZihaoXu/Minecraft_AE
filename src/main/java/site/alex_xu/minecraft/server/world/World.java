@@ -18,8 +18,8 @@ public class World extends MinecraftAECore {
     private float time = 0;
 
     public void onTick(double deltaTime) {
-        time += deltaTime / 60 / 20;
-        time %= 1.0;
+        time += deltaTime / 60 / 20 * 10;
+        time %= 0.5;
         for (Chunk chunk : chunks.values()) {
             chunk.onTick(deltaTime);
         }
@@ -37,6 +37,37 @@ public class World extends MinecraftAECore {
             return Blocks.AIR;
         }
         return null;
+    }
+
+    public int getLightLevelAt(int x, int y, int z) {
+        if (y >= 0 && y < 256) {
+            if (hasChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16))) {
+                return getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).getLightLevelAt(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
+            }
+            return 0;
+        }
+        return 0;
+    }
+
+    public int getEnvironmentLight(int x, int y, int z) {
+        if (y >= 0 && y < 256) {
+            if (hasChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16))) {
+                return getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).getEnvironmentLightLevel(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
+            }
+            return 0;
+        }
+        return 0;
+    }
+
+
+    public int getBlockLight(int x, int y, int z) {
+        if (y >= 0 && y < 256) {
+            if (hasChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16))) {
+                return getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).getBlockLightLevel(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
+            }
+            return 0;
+        }
+        return 0;
     }
 
     public Block getBlock(float x, float y, float z) {

@@ -13,6 +13,10 @@ out float zIndex;
 
 void main() {
     vColor = aColor;
+    // x: shadow (smooth lighting)
+    // y: block light (torch...)
+    // z: environment light (sun & moon)
+
     texCoord = aTexCoord;
     gl_Position = projMat * modelMat * vec4(aPos, 1.0);
     zIndex = gl_Position.z;

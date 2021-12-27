@@ -339,7 +339,12 @@ public class WorldScreen extends Screen {
                 renderer.renderBox(camera, 0, 0, 0, 1, 1, 1, true);
             }
         }
-        debugInfo = "Time: " + String.format("%.2f %%", time * 100);
+        debugInfo = "Time: " + String.format("%.2f %%", time * 100) + " | Light Level: " + world.getEnvironmentLight(
+
+                world.blockXOf(player.position().x),
+                world.blockYOf(player.position().y),
+                world.blockZOf(player.position().z)
+        );
     }
 
     @Override
