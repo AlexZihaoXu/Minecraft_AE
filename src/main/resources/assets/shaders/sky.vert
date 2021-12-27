@@ -11,5 +11,5 @@ uniform float yOffset;
 void main() {
     vPos = aPos;
     float scale = 512;
-    gl_Position = projMat * modelMat * vec4(aPos.x * scale, yOffset, aPos.y * scale, 1.0);
+    gl_Position = projMat * modelMat * vec4(aPos.x * scale, yOffset, aPos.y * scale, 1);
 }
