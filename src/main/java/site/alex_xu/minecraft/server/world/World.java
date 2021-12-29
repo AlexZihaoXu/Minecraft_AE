@@ -1,6 +1,7 @@
 package site.alex_xu.minecraft.server.world;
 
 import org.joml.Vector3f;
+import site.alex_xu.minecraft.client.MinecraftClient;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
@@ -11,6 +12,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 public class World extends MinecraftAECore {
 
     private final HashSet<ChunkCreationCallbackI> chunkCreationCallbacks = new HashSet<>();
@@ -18,8 +21,11 @@ public class World extends MinecraftAECore {
     private float time = 0;
 
     public void onTick(double deltaTime) {
-        time += deltaTime / 60 / 20 * 10;
-        time %= 0.5;
+        if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_ENTER) == GLFW_PRESS) {
+            time += deltaTime;
+        }
+        time += deltaTime / 60 / 20;
+        time %= 1.0;
         for (Chunk chunk : chunks.values()) {
             chunk.onTick(deltaTime);
         }

@@ -16,7 +16,7 @@ out vec4 FragColor;
 void main() {
     float shadow = vColor.x;
     float blockLight = vColor.y;
-    float envLight = vColor.z * 0.8 + 0.2;
+    float envLight = vColor.z;
 
     float tx = texCoord.x;
     float ty = texCoord.y;
@@ -30,12 +30,13 @@ void main() {
         discard;
     }
 
-    float dayLight = max(0.15, pow(sin(time * 3.14159265 * 2), 0.4));
+    float dayLight = max(0.0, pow(sin(time * 3.14159265 * 2), 0.4));
 
+    float brightness = max(blockLight, envLight * dayLight) * shadow * 0.9 + 0.1;
     vec4 lightColor = vec4(
-        max(blockLight, envLight * dayLight) * shadow,
-        max(blockLight, envLight * dayLight) * shadow,
-        max(blockLight, envLight * dayLight) * shadow,
+        brightness,
+        brightness,
+        brightness,
         1
     );
 
