@@ -272,34 +272,48 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         if (block != getBlock(x, y, z)) {
             blocks[x][z][y] = block;
             requiresModelUpdate = true;
-            if (x == 0) {
-                if (chunk.getWorld().hasChunk(chunk.getX() - 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).hasSection(sectionY)) { // West
-                    chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
-                }
-            }
-            if (x == 15) {
-                if (chunk.getWorld().hasChunk(chunk.getX() + 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).hasSection(sectionY)) { // West
-                    chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
-                }
-            }
-            if (z == 0) {
-                if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() - 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).hasSection(sectionY)) { // North
-                    chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
-                }
-            }
-            if (z == 15) {
-                if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() + 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).hasSection(sectionY)) { // South
-                    chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
-                }
-            }
-            if (y == 0) {
-                if (chunk.hasSection(sectionY - 1)) { // BOTTOM
-                    chunk.getOrCreateChunkSection(sectionY - 1).requiresModelUpdate = true;
-                }
-            }
-            if (y == 15) {
-                if (chunk.hasSection(sectionY + 1)) { // TOP
-                    chunk.getOrCreateChunkSection(sectionY + 1).requiresModelUpdate = true;
+//            if (x == 0) {
+//                if (chunk.getWorld().hasChunk(chunk.getX() - 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).hasSection(sectionY)) { // West
+//                    chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+//                }
+//            }
+//            if (x == 15) {
+//                if (chunk.getWorld().hasChunk(chunk.getX() + 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).hasSection(sectionY)) { // West
+//                    chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+//                }
+//            }
+//            if (z == 0) {
+//                if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() - 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).hasSection(sectionY)) { // North
+//                    chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+//                }
+//            }
+//            if (z == 15) {
+//                if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() + 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).hasSection(sectionY)) { // South
+//                    chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+//                }
+//            }
+//            if (y == 0) {
+//                if (chunk.hasSection(sectionY - 1)) { // BOTTOM
+//                    chunk.getOrCreateChunkSection(sectionY - 1).requiresModelUpdate = true;
+//                }
+//            }
+//            if (y == 15) {
+//                if (chunk.hasSection(sectionY + 1)) { // TOP
+//                    chunk.getOrCreateChunkSection(sectionY + 1).requiresModelUpdate = true;
+//                }
+//            }
+            Chunk chunk = getChunk();
+            World world = chunk.getWorld();
+            int sx = chunk.getX();
+            int sy = chunk.getY();
+            int sh = getSectionY();
+            for (int i = sx - 1; i <= sx + 1; i++) {
+                for (int j = sy - 1; j <= sy + 1; j++) {
+                    for (int k = sh - 1; k <= sh + 1; k++) {
+                        if (world.hasChunk(i, j) && world.getOrCreateChunk(i, j).hasSection(k)) {
+                            world.getOrCreateChunk(i, j).getOrCreateChunkSection(k).tryUpdate();
+                        }
+                    }
                 }
             }
         }
@@ -369,7 +383,7 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         return max(getBlockLightLevel(x, y, z), getEnvironmentLightLevel(x, y, z));
     }
 
-    protected void modelUpdate() {
+    public void modelUpdate() {
         calculateLights();
         for (ChunkEventCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
             chunkModelUpdateCallbackI.execute(this);
@@ -383,7 +397,7 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     @Override
     public void onTick(double deltaTime) {
         if (requiresModelUpdate) {
-            modelUpdate();
+            getChunk().getWorld().queueUpdatingSection(this);
             requiresModelUpdate = false;
         }
     }

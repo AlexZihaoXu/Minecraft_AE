@@ -6,10 +6,12 @@ import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.chunk.Chunk;
+import site.alex_xu.minecraft.server.chunk.ChunkSection;
 
 import javax.security.auth.callback.Callback;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.TreeMap;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -20,6 +22,9 @@ public class World extends MinecraftAECore {
 
     private float time = 0;
 
+    private final LinkedList<ChunkSection> queuedUpdatingSections = new LinkedList<>();
+    private final HashSet<ChunkSection> queuedUpdatingSectionSet = new HashSet<>();
+
     public void onTick(double deltaTime) {
         if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_ENTER) == GLFW_PRESS) {
             time += deltaTime;
@@ -28,6 +33,12 @@ public class World extends MinecraftAECore {
         time %= 1.0;
         for (Chunk chunk : chunks.values()) {
             chunk.onTick(deltaTime);
+        }
+
+        if (!queuedUpdatingSections.isEmpty()) {
+            ChunkSection section = queuedUpdatingSections.removeFirst();
+            queuedUpdatingSectionSet.remove(section);
+            section.modelUpdate();
         }
     }
 
@@ -65,6 +76,13 @@ public class World extends MinecraftAECore {
         return 0;
     }
 
+
+    public void queueUpdatingSection(ChunkSection section) {
+        if (queuedUpdatingSectionSet.contains(section))
+            return;
+        queuedUpdatingSections.add(section);
+        queuedUpdatingSectionSet.add(section);
+    }
 
     public int getBlockLight(int x, int y, int z) {
         if (y >= 0 && y < 256) {

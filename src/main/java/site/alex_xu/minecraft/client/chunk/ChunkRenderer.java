@@ -25,8 +25,10 @@ public class ChunkRenderer extends MinecraftAECore {
             if (chunkSectionMeshers[i] == null)
                 continue;
             Mesh model = chunkSectionMeshers[i].getSolidMesh();
-            model.resetModelMatrix().getModelMatrix().translate(chunk.getX() * 16, 16 * i, chunk.getY() * 16);
-            renderer.render(camera, model);
+            if (model != null) {
+                model.resetModelMatrix().getModelMatrix().translate(chunk.getX() * 16, 16 * i, chunk.getY() * 16);
+                renderer.render(camera, model);
+            }
         }
     }
 
@@ -35,8 +37,10 @@ public class ChunkRenderer extends MinecraftAECore {
             if (chunkSectionMeshers[i] == null)
                 continue;
             Mesh model = chunkSectionMeshers[i].getLiquidMesh();
-            model.resetModelMatrix().getModelMatrix().translate(chunk.getX() * 16, 16 * i, chunk.getY() * 16);
-            renderer.render(camera, model, 1);
+            if (model != null) {
+                model.resetModelMatrix().getModelMatrix().translate(chunk.getX() * 16, 16 * i, chunk.getY() * 16);
+                renderer.render(camera, model, 1);
+            }
         }
     }
 }
