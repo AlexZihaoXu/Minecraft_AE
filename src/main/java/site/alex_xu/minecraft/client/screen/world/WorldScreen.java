@@ -23,6 +23,7 @@ import site.alex_xu.minecraft.client.utils.shader.Shader;
 import site.alex_xu.minecraft.client.world.WorldRenderer;
 import site.alex_xu.minecraft.core.Minecraft;
 import site.alex_xu.minecraft.server.block.Blocks;
+import site.alex_xu.minecraft.server.chunk.ChunkSection;
 import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
 
@@ -374,6 +375,7 @@ public class WorldScreen extends Screen {
             }
         }
         render2D(context, vdt);
+        ChunkSection.printDebugInfo = true;
     }
 
     public void render2D(RenderContext context, double vdt) {

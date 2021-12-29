@@ -1,5 +1,6 @@
 package site.alex_xu.minecraft.server.chunk;
 
+import org.apache.logging.log4j.LogManager;
 import org.joml.Vector3i;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.core.Tickable;
@@ -13,140 +14,142 @@ import java.util.*;
 
 import static org.joml.Math.max;
 
-class LightTraveler {
-    public HashSet<Vector3i> lightSources = new HashSet<>();
-    public int[][][] lightLevels;
-    public ChunkSection section;
-    public GetLightLevelFunc getLightLevel;
+class LightTraveller {
+    ChunkSection section;
+    HashSet<Vector3i> sources = new HashSet<>();
+    int[][][] lightLevels = new int[48][48][48];
+    LightLevelGetter lightLevelGetter;
 
-    public LightTraveler(ChunkSection section, GetLightLevelFunc lightLevelFunc) {
-        this.lightLevels = new int[16][16][16];
+    public void printDebug(String info) {
+        if (ChunkSection.printDebugInfo)
+            LogManager.getLogger("Light Traveller").debug(info);
+    }
+
+    public LightTraveller(ChunkSection section, LightLevelGetter lightLevelGetter) {
         this.section = section;
-        this.getLightLevel = lightLevelFunc;
+        this.lightLevelGetter = lightLevelGetter;
     }
 
-    public void addLightSource(int x, int y, int z) {
-        lightSources.add(new Vector3i(x, y, z));
+    public void addSources(Collection<Vector3i> sources, int x, int y, int z) {
+        for (Vector3i source : sources) {
+            this.sources.add(new Vector3i(source.x + x, source.y + y, source.z + z));
+        }
     }
 
-    public void travel() {
-        boolean[][][] visited = new boolean[16][16][16];
+    public void autoAddSource(SourceSelectorFunc selector) {
+        addSources(selector.execute(section), 0, 0, 0); // Center
+        Chunk chunk = section.getChunk();
+        World world = chunk.getWorld();
+        int sx = chunk.getX();
+        int sy = chunk.getY();
+        int sh = section.getSectionY();
+        for (int x = sx - 1; x <= sx + 1; x++) {
+            for (int y = sy - 1; y <= sy + 1; y++) {
+                for (int h = sh - 1; h <= sh + 1; h++) {
+                    if (world.hasChunk(x, y) && world.getOrCreateChunk(x, y).hasSection(h)) {
+                        addSources(selector.execute(world.getOrCreateChunk(x, y).getOrCreateChunkSection(h)), (x - sx) * 16, (h - sh) * 16, (y - sy) * 16);
+                    }
+                }
+            }
+        }
+    }
+
+    public void setLevel(int level, int x, int y, int z) {
+//        if ((x < 0 || x >= 16 || y < 0 || y >= 16 || z < 0 || z >= 16) && level != lightLevelGetter.execute(section, x, y, z)) {
+//            if (x > 0 && section.east() != null) {
+//                section.tryUpdateNearbyChunk(Directions.EAST);
+//            }
+//            if (x < 0 && section.west() != null) {
+//                section.tryUpdateNearbyChunk(Directions.WEST);
+//            }
+//        }
+        lightLevels[x + 16][y + 16][z + 16] = level;
+    }
+
+    public int getLevel(int x, int y, int z) {
+        if (inRange(x, y, z)) {
+            return lightLevels[x + 16][y + 16][z + 16];
+        }
+        return lightLevelGetter.execute(section, x, y, z);
+    }
+
+    public int[][][] travel() {
+
+        boolean[][][] visited = new boolean[48][48][48];
+
         LinkedList<Vector3i> planned = new LinkedList<>();
 
-        for (Vector3i sourcePos : lightSources) {
-            int x = sourcePos.x;
-            int y = sourcePos.y;
-            int z = sourcePos.z;
-            planned.push(new Vector3i(x, y, z));
-            setLevel(15, x, y, z);
+        for (Vector3i source : sources) {
+            planned.add(source);
+            setLevel(15, source.x, source.y, source.z);
         }
 
-        int stage = 0;
-        while (stage < 2) {
-            Vector3i pos = planned.removeFirst();
+        while (!planned.isEmpty()) {
+            Vector3i pos = planned.removeLast();
             int x = pos.x;
             int y = pos.y;
             int z = pos.z;
 
-            if (inRange(x, y, z) && !visited[x][z][y]) {
-                visited[x][z][y] = true;
-                int level = getLevel(x, y, z);
-                if (section.getBlock(x, y, z).settings().material.blocksLight()) {
-                    setLevel(0, x, y, z);
-                } else {
-                    int nearbyMaximumLevel = 0;
-                    nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x + 1, y, z));
-                    nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x - 1, y, z));
-                    nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y + 1, z));
-                    nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y - 1, z));
-                    nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y, z + 1));
-                    nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y, z - 1));
+            Block block = section.getBlock(x, y, z);
+            if (inRange(x, y, z) && !visited[x + 16][y + 16][z + 16] && !(block == null ? Blocks.AIR : block).settings().material.blocksLight()) {
+                visited[x + 16][y + 16][z + 16] = true;
 
-                    level = max(level, nearbyMaximumLevel - 1);
-                    setLevel(level, x, y, z);
-                    planned.addLast(new Vector3i(x + 1, y, z));
-                    planned.addLast(new Vector3i(x - 1, y, z));
-                    planned.addLast(new Vector3i(x, y + 1, z));
-                    planned.addLast(new Vector3i(x, y - 1, z));
-                    planned.addLast(new Vector3i(x, y, z + 1));
-                    planned.addLast(new Vector3i(x, y, z - 1));
-                }
-            } else if (!inRange(x, y, z)) {
+
                 int nearbyMaximumLevel = 0;
-                int level = getLevel(x, y, z);
                 nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x + 1, y, z));
                 nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x - 1, y, z));
                 nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y + 1, z));
                 nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y - 1, z));
                 nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y, z + 1));
                 nearbyMaximumLevel = max(nearbyMaximumLevel, getLevel(x, y, z - 1));
-                if (level != nearbyMaximumLevel - 1)
-                    if (x > 15) {
-                        section.tryUpdateNearbyChunk(Directions.EAST);
-                    } else if (x < 0) {
-                        section.tryUpdateNearbyChunk(Directions.WEST);
-                    } else if (y > 15) {
-                        section.tryUpdateNearbyChunk(Directions.TOP);
-                    } else if (y < 0) {
-                        section.tryUpdateNearbyChunk(Directions.BOTTOM);
-                    } else if (z > 15) {
-                        section.tryUpdateNearbyChunk(Directions.NORTH);
-                    } else {
-                        section.tryUpdateNearbyChunk(Directions.SOUTH);
-                    }
+
+                setLevel(max(getLevel(x, y, z), nearbyMaximumLevel - 1), x, y, z);
+
+                if (getLevel(x + 1, y, z) != 15)
+                    planned.addFirst(new Vector3i(x + 1, y, z));
+                if (getLevel(x - 1, y, z) != 15)
+                    planned.addFirst(new Vector3i(x - 1, y, z));
+                if (getLevel(x, y + 1, z) != 15)
+                    planned.addFirst(new Vector3i(x, y + 1, z));
+                if (getLevel(x, y - 1, z) != 15)
+                    planned.addFirst(new Vector3i(x, y - 1, z));
+                if (getLevel(x, y, z + 1) != 15)
+                    planned.addFirst(new Vector3i(x, y, z + 1));
+                if (getLevel(x, y, z - 1) != 15)
+                    planned.addFirst(new Vector3i(x, y, z - 1));
             }
-            if (planned.isEmpty()) {
-                if (stage == 0) {
-                    for (int ex = 0; ex < 16; ex++) {
-                        for (int ey = 0; ey < 16; ey++) {
-                            planned.addLast(new Vector3i(ex, 15, ey)); // TOP
-                            planned.addLast(new Vector3i(ex, 0, ey)); // BOTTOM
-                            planned.addLast(new Vector3i(ex, ey, 0)); // NORTH
-                            planned.addLast(new Vector3i(ex, ey, 15)); // SOUTH
-                            planned.addLast(new Vector3i(15, ex, ey)); // EAST
-                            planned.addLast(new Vector3i(0, ex, ey)); // WEST
-                        }
-                    }
+        }
+        int[][][] result = new int[16][16][16];
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 16; y++) {
+                    result[x][z][y] = getLevel(x, y, z);
                 }
-                stage++;
             }
         }
+        return result;
     }
 
-    protected boolean inRange(int x, int y, int z) {
-        return 0 <= x && x < 16 && 0 <= y && y < 16 && 0 <= z && z < 16;
+    public boolean inRange(int x, int y, int z) {
+        return -16 <= x && x < 32 && -16 <= y && y < 32 && -16 <= z && z < 32;
     }
 
-    protected int getLevel(int x, int y, int z) {
-        if (inRange(x, y, z)) {
-            return lightLevels[x][z][y];
-        }
-        return getLightLevel.execute(section, x, y, z);
+    interface SourceSelectorFunc extends Callback {
+        HashSet<Vector3i> execute(ChunkSection section);
     }
 
-    protected void setLevel(int level, int x, int y, int z) {
-        lightLevels[x][z][y] = level;
-    }
-
-    public int[][][] getLightLevels() {
-        return lightLevels;
-    }
-
-    public static int getEnvLights(ChunkSection section, int x, int y, int z) {
-        return section.getEnvironmentLightLevel(x, y, z);
-    }
-
-    public static int getBlockLights(ChunkSection section, int x, int y, int z) {
-        return section.getBlockLightLevel(x, y, z);
-    }
-
-    protected interface GetLightLevelFunc extends Callback {
+    interface LightLevelGetter extends Callback {
         int execute(ChunkSection section, int x, int y, int z);
     }
+
 }
 
 public class ChunkSection extends MinecraftAECore implements Tickable {
+    public static boolean printDebugInfo = false;
+
     private final Block[][][] blocks = new Block[16][16][16];
+    private final HashSet<Vector3i> envLightSources = new HashSet<>();
+    private final HashSet<Vector3i> blockLightSources = new HashSet<>();
     final int[][][] blockLightLevels = new int[16][16][16];
     int[][][] envLightLevels = new int[16][16][16];
     private final HashSet<ChunkEventCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
@@ -154,7 +157,9 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     private boolean requiresModelUpdate = false;
     private final Chunk chunk;
     private final int sectionY;
+    private final LinkedList<ChunkSection> tryUpdatingSections = new LinkedList<>();
 
+    // Callbacks
     public void registerChunkModelUpdateCallback(ChunkEventCallbackI chunkModelUpdateCallbackI) {
         chunkModelUpdateCallbackIs.add(chunkModelUpdateCallbackI);
     }
@@ -171,6 +176,8 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         chunkDisposeCallbackIs.remove(chunkDisposeCallbackI);
     }
 
+    // Chunk Section
+
     public ChunkSection(Chunk chunk, int sectionY) {
         this.chunk = chunk;
         this.sectionY = sectionY;
@@ -184,26 +191,72 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
 
     public boolean tryUpdateNearbyChunk(int direction) {
         if (direction == Directions.TOP && chunk.hasSection(sectionY + 1)) { // TOP
-            chunk.getOrCreateChunkSection(sectionY + 1).requiresModelUpdate = true;
+            tryUpdatingSections.add(top());
             return true;
         } else if (direction == Directions.BOTTOM && chunk.hasSection(sectionY - 1)) { // BOTTOM
-            chunk.getOrCreateChunkSection(sectionY - 1).requiresModelUpdate = true;
+            tryUpdatingSections.add(bottom());
             return true;
         } else if (direction == Directions.NORTH && chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() - 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).hasSection(sectionY)) { // North
-            chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+            tryUpdatingSections.add(north());
             return true;
         } else if (direction == Directions.SOUTH && chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() + 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).hasSection(sectionY)) { // South
-            chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+            tryUpdatingSections.add(south());
             return true;
         } else if (direction == Directions.WEST && chunk.getWorld().hasChunk(chunk.getX() - 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).hasSection(sectionY)) { // West
-            chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+            tryUpdatingSections.add(west());
             return true;
         } else if (direction == Directions.EAST && chunk.getWorld().hasChunk(chunk.getX() + 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).hasSection(sectionY)) { // East
-            chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).getOrCreateChunkSection(sectionY).requiresModelUpdate = true;
+            tryUpdatingSections.add(east());
             return true;
         }
         return false;
     }
+
+    // Nearby Chunks
+
+    public ChunkSection east() {
+        if (chunk.getWorld().hasChunk(chunk.getX() + 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).hasSection(sectionY)) {
+            return chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).getOrCreateChunkSection(sectionY);
+        }
+        return null;
+    }
+
+    public ChunkSection west() {
+        if (chunk.getWorld().hasChunk(chunk.getX() - 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).hasSection(sectionY)) {
+            return chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).getOrCreateChunkSection(sectionY);
+        }
+        return null;
+    }
+
+    public ChunkSection south() {
+        if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() + 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).hasSection(sectionY)) {
+            return chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).getOrCreateChunkSection(sectionY);
+        }
+        return null;
+    }
+
+    public ChunkSection north() {
+        if (chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() - 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).hasSection(sectionY)) {
+            return chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).getOrCreateChunkSection(sectionY);
+        }
+        return null;
+    }
+
+    public ChunkSection bottom() {
+        if (chunk.hasSection(sectionY - 1)) {
+            return chunk.getOrCreateChunkSection(sectionY - 1);
+        }
+        return null;
+    }
+
+    public ChunkSection top() {
+        if (chunk.hasSection(sectionY + 1)) {
+            return chunk.getOrCreateChunkSection(sectionY + 1);
+        }
+        return null;
+    }
+
+    //
 
     public Chunk getChunk() {
         return chunk;
@@ -295,21 +348,21 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         envLightLevels[x][z][y] = level;
     }
 
-    public void calculateEnvironmentLight() {
-        LightTraveler traveler = new LightTraveler(this, LightTraveler::getEnvLights);
+    private void calculateLights() {
+        envLightSources.clear();
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
-                for (int y = 15; y >= 0; y--) {
-                    Block block = getBlock(x, y, z);
-                    if (block.settings().material.blocksLight())
+                for (int y = 16; y >= 0; y--) {
+                    if (getBlock(x, y, z).settings().material.blocksLight())
                         break;
-                    traveler.addLightSource(x, y, z);
+                    envLightSources.add(new Vector3i(x, y, z));
                 }
             }
         }
-        traveler.travel();
-        envLightLevels = traveler.getLightLevels();
 
+        LightTraveller traveler = new LightTraveller(this, ChunkSection::getEnvironmentLightLevel);
+        traveler.autoAddSource(section -> section.envLightSources);
+        envLightLevels = traveler.travel();
     }
 
     public int getLightLevelAt(int x, int y, int z) {
@@ -317,10 +370,14 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     }
 
     protected void modelUpdate() {
-        calculateEnvironmentLight();
+        calculateLights();
         for (ChunkEventCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
             chunkModelUpdateCallbackI.execute(this);
         }
+        for (ChunkSection tryUpdatingSection : tryUpdatingSections) {
+            tryUpdatingSection.requiresModelUpdate = true;
+        }
+        tryUpdatingSections.clear();
     }
 
     @Override
@@ -329,6 +386,10 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
             modelUpdate();
             requiresModelUpdate = false;
         }
+    }
+
+    public void tryUpdate() {
+        requiresModelUpdate = true;
     }
 
     public interface ChunkEventCallbackI extends Callback {
