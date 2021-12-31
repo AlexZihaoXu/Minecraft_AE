@@ -1,7 +1,5 @@
 package site.alex_xu.minecraft.server.chunk;
 
-import org.apache.logging.log4j.LogManager;
-import org.joml.Vector3i;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.core.Tickable;
 import site.alex_xu.minecraft.server.Directions;
@@ -10,9 +8,8 @@ import site.alex_xu.minecraft.server.block.Blocks;
 import site.alex_xu.minecraft.server.world.World;
 
 import javax.security.auth.callback.Callback;
-import java.util.*;
-
-import static org.joml.Math.max;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 public class ChunkSection extends MinecraftAECore implements Tickable {
 
@@ -23,27 +20,13 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     private final Chunk chunk;
     private final int sectionY;
     private final LinkedList<ChunkSection> tryUpdatingSections = new LinkedList<>();
-    private final LightInformation envLightInfo = new LightInformation();
     private boolean modelUpdated = false;
 
     // Lights
-
-    LightInformation getEnvLightInfo() {
-        return envLightInfo;
-    }
-
     public byte getEnvLightLevel(int x, int y, int z) {
-        if (x >= 0 && x < 16 && y >= 0 && y < 16 && z >= 0 && z < 16) {
-            return getEnvLightInfo().getMaxLevel(x, y, z);
-        } else {
-            ChunkSection nearby = nearby(Math.floorDiv(x, 16), Math.floorDiv(y, 16), Math.floorDiv(z, 16));
-            if (nearby != null) {
-                return nearby.getEnvLightLevel(Math.floorMod(x, 16), Math.floorMod(y, 16), Math.floorMod(z, 16));
-            }
-        }
+        // fixme
         return 0;
     }
-
 
     // Callbacks
     public void registerChunkModelUpdateCallback(ChunkEventCallbackI chunkModelUpdateCallbackI) {
@@ -224,19 +207,6 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     }
 
     public void modelUpdate() {
-        LightTraveller traveller = new LightTraveller(this, ChunkSection::getEnvLightInfo);
-
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = 15; y >= 0; y--) {
-                    if (getBlock(x, y, z).settings().material.blocksLight())
-                        break;
-                    traveller.addSource(x, y, z);
-                }
-            }
-        }
-
-        traveller.travel();
 
         modelUpdated = true;
         for (ChunkSection tryUpdatingSection : tryUpdatingSections) {
