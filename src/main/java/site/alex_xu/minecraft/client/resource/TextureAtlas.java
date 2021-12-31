@@ -1,13 +1,10 @@
 package site.alex_xu.minecraft.client.resource;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import site.alex_xu.minecraft.client.render.Renderer2D;
-import site.alex_xu.minecraft.client.utils.Framebuffer;
 import site.alex_xu.minecraft.client.utils.Texture;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
-import site.alex_xu.minecraft.server.models.BlockModelDef;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -20,20 +17,25 @@ import java.util.Objects;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public final class BlockTextureAtlas extends MinecraftAECore {
+public final class TextureAtlas extends MinecraftAECore {
     private final HashMap<String, Texture> pathTextureMap = new HashMap<>();
     private final HashMap<String, Rectangle2D.Float> textureBoundMap = new HashMap<>();
-    private static BlockTextureAtlas instance = null;
+    private static TextureAtlas instance = null;
     private Texture atlas = null;
+    private final HashSet<String> paths = new HashSet<>();
 
-    public static BlockTextureAtlas getInstance() {
+    public static TextureAtlas getInstance() {
         if (instance == null)
-            instance = new BlockTextureAtlas();
+            instance = new TextureAtlas();
         return instance;
     }
 
-    private BlockTextureAtlas() {
+    private void addPath(String path) {
+        paths.add(path);
+    }
 
+    private TextureAtlas() {
+        addPath("assets/textures/entity/steve.png");
     }
 
     public Texture getAtlasBuffer() {
@@ -41,7 +43,6 @@ public final class BlockTextureAtlas extends MinecraftAECore {
     }
 
     void load() {
-        HashSet<String> paths = new HashSet<>();
         for (Block block : Blocks.blocks.values()) {
             if (block.modelDef() != null)
                 paths.addAll(block.modelDef().texturePathMap.values());

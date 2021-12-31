@@ -6,10 +6,10 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import site.alex_xu.minecraft.client.MinecraftClient;
 import site.alex_xu.minecraft.client.control.FirstPersonController;
+import site.alex_xu.minecraft.client.entity.PlayerRenderer;
 import site.alex_xu.minecraft.client.model.Mesh;
 import site.alex_xu.minecraft.client.model.MeshBuilder;
 import site.alex_xu.minecraft.client.render.GameObjectRenderer;
-import site.alex_xu.minecraft.client.render.ModelRenderer;
 import site.alex_xu.minecraft.client.render.Renderer2D;
 import site.alex_xu.minecraft.client.resource.FontTextureAtlas;
 import site.alex_xu.minecraft.client.resource.ResourceManager;
@@ -22,8 +22,8 @@ import site.alex_xu.minecraft.client.utils.buffers.VertexBuffer;
 import site.alex_xu.minecraft.client.utils.shader.Shader;
 import site.alex_xu.minecraft.client.world.WorldRenderer;
 import site.alex_xu.minecraft.core.Minecraft;
+import site.alex_xu.minecraft.server.Directions;
 import site.alex_xu.minecraft.server.block.Blocks;
-import site.alex_xu.minecraft.server.chunk.ChunkSection;
 import site.alex_xu.minecraft.server.entity.PlayerEntity;
 import site.alex_xu.minecraft.server.world.World;
 
@@ -63,7 +63,7 @@ public class WorldScreen extends Screen {
     public World world;
     public WorldRenderer worldRenderer;
     public PlayerEntity player;
-
+    public PlayerRenderer playerRenderer;
 
     @Override
     public void onSetup() {
@@ -125,8 +125,8 @@ public class WorldScreen extends Screen {
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
 
-        for (int x = -30; x < 30; x++) {
-            for (int z = -30; z < 30; z++) {
+        for (int x = -100; x < 100; x++) {
+            for (int z = -100; z < 100; z++) {
                 for (int y = 1; y < 3; y++) {
                     world.setBlock(Blocks.DIRT, x, y, z);
                 }
@@ -234,6 +234,7 @@ public class WorldScreen extends Screen {
             world.setBlock(Blocks.OAK_PLANKS, 0, 5, 5);
         }
         world.setBlock(Blocks.CRAFTING_TABLE, 0, 4, 7);
+        playerRenderer = new PlayerRenderer();
     }
 
     @Override
@@ -341,7 +342,6 @@ public class WorldScreen extends Screen {
             }
         }
         debugInfo = "Time: " + String.format("%.2f %%", time * 100) + " | Light Level: " + world.getEnvironmentLight(
-
                 world.blockXOf(player.position().x),
                 world.blockYOf(player.position().y),
                 world.blockZOf(player.position().z)
@@ -357,25 +357,39 @@ public class WorldScreen extends Screen {
         renderSky(context);
 
         firstPersonController.onTick(vdt);
-        // Tick
-//        entity2.onTick(vdt);
-        //
-
         worldRenderer.render(context.getRenderer().get3D(), getCamera());
 
         var objectRenderer = new GameObjectRenderer(context);
 
-
-//        objectRenderer.renderHitbox(camera, entity2.hitbox());
         {
             Vector3i blockPos = firstPersonController.rayCast()[0];
             if (blockPos != null) {
-                glDisable(GL_DEPTH_TEST);
                 objectRenderer.renderBlockSelectionBox(camera, blockPos.x, blockPos.y, blockPos.z);
+            }
+
+            playerRenderer.position().y = 4;
+            playerRenderer.render(camera, objectRenderer, vdt);
+            if (new Vector3f(playerRenderer.position()).add(0, 1.8f, 0).distanceSquared(camera.position) < 10) {
+                playerRenderer.pitch = Directions.lookAt(new Vector3f(playerRenderer.position()).add(0, 1.8f, 0), camera.position).x;
+                playerRenderer.yaw = Directions.lookAt(playerRenderer.position(), camera.position).y;
+            }
+
+            {
+                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_I) == GLFW_PRESS) {
+                    playerRenderer.pitch += vdt;
+                }
+                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_K) == GLFW_PRESS) {
+                    playerRenderer.pitch -= vdt;
+                }
+                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_J) == GLFW_PRESS) {
+                    playerRenderer.yaw -= vdt;
+                }
+                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_L) == GLFW_PRESS) {
+                    playerRenderer.yaw += vdt;
+                }
             }
         }
         render2D(context, vdt);
-        ChunkSection.printDebugInfo = true;
     }
 
     public void render2D(RenderContext context, double vdt) {

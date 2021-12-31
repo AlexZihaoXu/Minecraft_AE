@@ -1,7 +1,7 @@
 package site.alex_xu.minecraft.client.render;
 
 import site.alex_xu.minecraft.client.model.Mesh;
-import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
+import site.alex_xu.minecraft.client.resource.TextureAtlas;
 import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.utils.BindableContext;
 import site.alex_xu.minecraft.client.utils.ImageType;
@@ -37,9 +37,9 @@ public class ModelRenderer extends Renderer {
         getShader().setMat4("projMat", false, camera.getMatrix(bindableContext));
         getShader().setMat4("modelMat", false, model.getModelMatrix());
         if (getShader().hasUniform("texWidth"))
-            getShader().setFloat("texWidth", BlockTextureAtlas.getInstance().getAtlasBuffer().getWidth());
+            getShader().setFloat("texWidth", TextureAtlas.getInstance().getAtlasBuffer().getWidth());
         if (getShader().hasUniform("texHeight"))
-            getShader().setFloat("texHeight", BlockTextureAtlas.getInstance().getAtlasBuffer().getHeight());
+            getShader().setFloat("texHeight", TextureAtlas.getInstance().getAtlasBuffer().getHeight());
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -48,10 +48,10 @@ public class ModelRenderer extends Renderer {
     }
 
     public void render(Camera camera, Mesh model) {
-        render(camera, model, 0, BlockTextureAtlas.getInstance().getAtlasBuffer());
+        render(camera, model, 0, TextureAtlas.getInstance().getAtlasBuffer());
     }
 
     public void render(Camera camera, Mesh model, int mode) {
-        render(camera, model, mode, BlockTextureAtlas.getInstance().getAtlasBuffer());
+        render(camera, model, mode, TextureAtlas.getInstance().getAtlasBuffer());
     }
 }

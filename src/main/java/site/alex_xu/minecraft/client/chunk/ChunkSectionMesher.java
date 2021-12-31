@@ -2,7 +2,7 @@ package site.alex_xu.minecraft.client.chunk;
 
 import site.alex_xu.minecraft.client.model.Mesh;
 import site.alex_xu.minecraft.client.model.MeshBuilder;
-import site.alex_xu.minecraft.client.resource.BlockTextureAtlas;
+import site.alex_xu.minecraft.client.resource.TextureAtlas;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.server.block.Block;
 import site.alex_xu.minecraft.server.block.Blocks;
@@ -119,7 +119,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
             }
 
             if (!canceled) {
-                Rectangle2D.Float bound = BlockTextureAtlas.getInstance().getTextureBound(self.texturePathMap.get(face.name()));
+                Rectangle2D.Float bound = TextureAtlas.getInstance().getTextureBound(self.texturePathMap.get(face.name()));
 
                 blockLight /= 15f;
                 envLight /= 15f;

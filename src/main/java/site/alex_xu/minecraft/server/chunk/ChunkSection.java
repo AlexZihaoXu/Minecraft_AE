@@ -19,12 +19,6 @@ class LightTraveller {
     HashSet<Vector3i> sources = new HashSet<>();
     int[][][] lightLevels = new int[48][48][48];
     LightLevelGetter lightLevelGetter;
-
-    public void printDebug(String info) {
-        if (ChunkSection.printDebugInfo)
-            LogManager.getLogger("Light Traveller").debug(info);
-    }
-
     public LightTraveller(ChunkSection section, LightLevelGetter lightLevelGetter) {
         this.section = section;
         this.lightLevelGetter = lightLevelGetter;
@@ -145,7 +139,6 @@ class LightTraveller {
 }
 
 public class ChunkSection extends MinecraftAECore implements Tickable {
-    public static boolean printDebugInfo = false;
 
     private final Block[][][] blocks = new Block[16][16][16];
     private final HashSet<Vector3i> envLightSources = new HashSet<>();
