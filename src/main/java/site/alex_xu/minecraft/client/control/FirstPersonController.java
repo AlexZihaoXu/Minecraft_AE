@@ -184,7 +184,7 @@ public class FirstPersonController extends MinecraftAECore implements Tickable {
                 entity.position().z
         );
         if (locked) {
-            float speed = (float) (43f * deltaTime);
+            float speed = (float) (43f * deltaTime) * 3;
             if (glfwGetKey(window.getWindowHandle(), GLFW_KEY_W) == GLFW_PRESS) {
                 entity.velocity().x += (float) (cos(camera.yaw) * speed);
                 entity.velocity().z += (float) (sin(camera.yaw) * speed);

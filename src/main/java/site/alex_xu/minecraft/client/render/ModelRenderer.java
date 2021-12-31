@@ -13,6 +13,15 @@ import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class ModelRenderer extends Renderer {
     private static Shader shader;
+    private float lightLevel = 1.0f;
+
+    public void setLightLevel(float level) {
+        lightLevel = level;
+    }
+
+    public float getLightLevel() {
+        return lightLevel;
+    }
 
     public ModelRenderer(BindableContext bindableContext) {
         super(bindableContext);
@@ -32,6 +41,7 @@ public class ModelRenderer extends Renderer {
         getShader().bind();
         glActiveTexture(GL_TEXTURE0);
         imageType.bind();
+        getShader().setFloat("lightLevel", lightLevel);
         getShader().setInt("texture0", 0);
         getShader().setInt("mode", mode);
         getShader().setMat4("projMat", false, camera.getMatrix(bindableContext));

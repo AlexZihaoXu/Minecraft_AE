@@ -61,55 +61,25 @@ public class Chunk extends MinecraftAECore implements Tickable {
         return Blocks.AIR;
     }
 
+    public byte getEnvironmentLight(int x, int y, int z) {
+        int sectionY = y / sections.length;
+        if (sectionY >= 0 && sectionY < 16) {
+            if (sections[sectionY] == null) {
+                return 0;
+            }
+            return sections[sectionY].getEnvLightLevel(x, Math.floorMod(y, 16), z);
+        }
+        return 0;
+    }
+
     public void setBlock(Block block, int x, int y, int z) {
         int sectionY = y / sections.length;
         getOrCreateChunkSection(sectionY).setBlock(block, x, Math.floorMod(y, 16), z);
     }
 
-    public void setBlockLightLevel( int  level, int x, int y, int z) {
-        int sectionY = y / sections.length;
-        getOrCreateChunkSection(sectionY).setBlockLightLevel(level, x, Math.floorMod(y, 16), z);
-    }
-
-    public  int  getBlockLightLevel(int x, int y, int z) {
-        int sectionY = y / sections.length;
-        if (sectionY >= 0 && sectionY < 16) {
-            if (sections[sectionY] == null) {
-                return 0;
-            }
-            return sections[sectionY].getBlockLightLevel(x, Math.floorMod(y, 16), z);
-        }
-        return 0;
-    }
-
-    public void setEnvironmentLightLevel( int  level, int x, int y, int z) {
-        int sectionY = y / sections.length;
-        getOrCreateChunkSection(sectionY).setEnvironmentLightLevel(level, x, Math.floorMod(y, 16), z);
-    }
-
-    public  int  getEnvironmentLightLevel(int x, int y, int z) {
-        int sectionY = y / sections.length;
-        if (sectionY >= 0 && sectionY < 16) {
-            if (sections[sectionY] == null) {
-                return 0;
-            }
-            return sections[sectionY].getEnvironmentLightLevel(x, Math.floorMod(y, 16), z);
-        }
-        return 0;
-    }
-
-    public  int  getLightLevelAt(int x, int y, int z) {
-        int sectionY = y / sections.length;
-        if (sectionY >= 0 && sectionY < 16) {
-            if (sections[sectionY] == null) {
-                return 0;
-            }
-            return sections[sectionY].getLightLevelAt(x, Math.floorMod(y, 16), z);
-        }
-        return 0;
-    }
-
     public ChunkSection getOrCreateChunkSection(int sectionY) {
+        if (sectionY >= 16)
+            return null;
         if (sections[sectionY] == null) {
             sections[sectionY] = new ChunkSection(this, sectionY);
             for (ChunkSectionCreationCallbackI chunkCreationCallback : chunkCreationCallbacks) {

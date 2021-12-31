@@ -9,6 +9,7 @@ import site.alex_xu.minecraft.client.resource.TextureAtlas;
 import site.alex_xu.minecraft.client.screen.world.Camera;
 import site.alex_xu.minecraft.client.utils.Texture;
 import site.alex_xu.minecraft.core.MinecraftAECore;
+import site.alex_xu.minecraft.server.world.World;
 
 public abstract class EntityRenderer extends MinecraftAECore {
     private static Texture texture = null;
@@ -100,5 +101,5 @@ public abstract class EntityRenderer extends MinecraftAECore {
         return texture;
     }
 
-    public abstract void render(Camera camera, GameObjectRenderer renderer, double vdt);
+    public abstract void render(Camera camera, GameObjectRenderer renderer, double vdt, World world);
 }

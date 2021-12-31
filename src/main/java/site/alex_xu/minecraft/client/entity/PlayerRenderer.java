@@ -3,6 +3,7 @@ package site.alex_xu.minecraft.client.entity;
 import site.alex_xu.minecraft.client.model.Mesh;
 import site.alex_xu.minecraft.client.render.GameObjectRenderer;
 import site.alex_xu.minecraft.client.screen.world.Camera;
+import site.alex_xu.minecraft.server.world.World;
 
 import static org.joml.Math.*;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
@@ -83,7 +84,7 @@ public class PlayerRenderer extends EntityRenderer {
     }
 
     @Override
-    public void render(Camera camera, GameObjectRenderer renderer, double vdt) {
+    public void render(Camera camera, GameObjectRenderer renderer, double vdt, World world) {
         float now = (float) glfwGetTime();
 
         if (yaw - bodyYaw > 0.6) {
@@ -152,6 +153,10 @@ public class PlayerRenderer extends EntityRenderer {
         rightLeg.getModelMatrix().rotateX(cos(animationSpeed * now) * min(animationSpeed * 0.13f, 1.65f));
         rightLeg.getModelMatrix().translate(0, units(-6), 0);
 
+        float level = renderer.getLightLevel();
+
+        renderer.setLightLevel(world.getEnvironmentLight(world.blockXOf(position().x), world.blockYOf(position().y), world.blockZOf(position().z)) / 15f);
+
         renderer.render(camera, head, 0, getTexture());
         renderer.render(camera, body, 0, getTexture());
         renderer.render(camera, leftArm, 0, getTexture());
@@ -159,6 +164,7 @@ public class PlayerRenderer extends EntityRenderer {
         renderer.render(camera, leftLeg, 0, getTexture());
         renderer.render(camera, rightLeg, 0, getTexture());
 
+        renderer.setLightLevel(level);
 
     }
 }

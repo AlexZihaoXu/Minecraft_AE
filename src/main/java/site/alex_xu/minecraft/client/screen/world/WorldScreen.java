@@ -125,8 +125,9 @@ public class WorldScreen extends Screen {
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
 
-        for (int x = -100; x < 100; x++) {
-            for (int z = -100; z < 100; z++) {
+        int viewDistance = 12;
+        for (int x = -viewDistance * 16; x < viewDistance * 16; x++) {
+            for (int z = -viewDistance * 16; z < viewDistance * 16; z++) {
                 for (int y = 1; y < 3; y++) {
                     world.setBlock(Blocks.DIRT, x, y, z);
                 }
@@ -346,6 +347,7 @@ public class WorldScreen extends Screen {
                 world.blockYOf(player.position().y),
                 world.blockZOf(player.position().z)
         );
+        world.loadingCenter().set(camera.position);
     }
 
     @Override
@@ -368,25 +370,10 @@ public class WorldScreen extends Screen {
             }
 
             playerRenderer.position().y = 4;
-            playerRenderer.render(camera, objectRenderer, vdt);
+            playerRenderer.render(camera, objectRenderer, vdt, world);
             if (new Vector3f(playerRenderer.position()).add(0, 1.8f, 0).distanceSquared(camera.position) < 10) {
                 playerRenderer.pitch = Directions.lookAt(new Vector3f(playerRenderer.position()).add(0, 1.8f, 0), camera.position).x;
                 playerRenderer.yaw = Directions.lookAt(playerRenderer.position(), camera.position).y;
-            }
-
-            {
-                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_I) == GLFW_PRESS) {
-                    playerRenderer.pitch += vdt;
-                }
-                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_K) == GLFW_PRESS) {
-                    playerRenderer.pitch -= vdt;
-                }
-                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_J) == GLFW_PRESS) {
-                    playerRenderer.yaw -= vdt;
-                }
-                if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_L) == GLFW_PRESS) {
-                    playerRenderer.yaw += vdt;
-                }
             }
         }
         render2D(context, vdt);

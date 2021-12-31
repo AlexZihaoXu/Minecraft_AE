@@ -10,6 +10,7 @@ uniform float texWidth;
 uniform float texHeight;
 uniform float animationTime;
 uniform float time;
+uniform float lightLevel;
 
 out vec4 FragColor;
 
@@ -32,7 +33,7 @@ void main() {
 
     float dayLight = max(0.0, pow(sin(time * 3.14159265 * 2), 0.4));
 
-    float brightness = max(blockLight, envLight * dayLight) * shadow * 0.9 + 0.1;
+    float brightness = max(blockLight, envLight * dayLight) * shadow * 0.9 * lightLevel + 0.1;
     vec4 lightColor = vec4(
         brightness,
         brightness,
