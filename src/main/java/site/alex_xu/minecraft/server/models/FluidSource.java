@@ -18,12 +18,12 @@ public class FluidSource extends BlockModelDef {
         Z
         */
         vertex(0, 0, 0, 1);
-        vertex(1, 0, 0.6f, 1);
-        vertex(2, 1, 0.6f, 1);
+        vertex(1, 0, 0.75f, 1);
+        vertex(2, 1, 0.75f, 1);
         vertex(3, 1, 0, 1);
         vertex(4, 0, 0, 0);
-        vertex(5, 0, 0.6f, 0);
-        vertex(6, 1, 0.6f, 0);
+        vertex(5, 0, 0.75f, 0);
+        vertex(6, 1, 0.75f, 0);
         vertex(7, 1, 0, 0);
 
         face("north", 7, 6, 5, 4);

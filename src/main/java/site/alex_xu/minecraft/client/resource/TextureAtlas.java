@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,6 +85,7 @@ public final class TextureAtlas extends MinecraftAECore {
             ImageIO.write(atlasBuffer, "PNG", outputStream);
             atlas = new Texture(outputStream.toByteArray(), GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST);
             getLogger().info("Generated texture atlas: " + atlasWidth + "x" + atlasHeight);
+            ImageIO.write(atlasBuffer, "PNG", new File("texture-atlas.png"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new IllegalStateException("Unable to generated block texture atlas!");

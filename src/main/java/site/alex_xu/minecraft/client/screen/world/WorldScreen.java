@@ -236,6 +236,14 @@ public class WorldScreen extends Screen {
         }
         world.setBlock(Blocks.CRAFTING_TABLE, 0, 4, 7);
         playerRenderer = new PlayerRenderer();
+
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                world.setBlock(Blocks.WATER, 10 + x, 3, y);
+            }
+        }
+
+        world.setBlock(Blocks.OAK_LEAVES, 5, 5, 5);
     }
 
     @Override

@@ -14,7 +14,7 @@ public class PlayerRenderer extends EntityRenderer {
     public float yaw = (float) (-Math.PI / 2);
     protected float bodyYaw = yaw;
     protected Mesh[] parts;
-    public float animationSpeed = 1.0f;
+    public float animationSpeed = 8.0f;
 
     public PlayerRenderer() {
         head = createBodyPart(
