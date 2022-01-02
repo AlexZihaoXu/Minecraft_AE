@@ -9,7 +9,6 @@ uniform mat4 modelMat;
 
 out vec4 vColor;
 out vec2 texCoord;
-out float depth;
 
 void main() {
     vColor = aColor;
@@ -19,5 +18,4 @@ void main() {
 
     texCoord = aTexCoord;
     gl_Position = projMat * modelMat * vec4(aPos, 1.0);
-    depth = gl_Position.z / 1500;
 }

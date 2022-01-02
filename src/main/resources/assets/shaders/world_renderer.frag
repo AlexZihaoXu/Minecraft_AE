@@ -4,7 +4,6 @@
 
 in vec4 vColor;
 in vec2 texCoord;
-in float depth;
 
 uniform sampler2D texture0;
 uniform int mode;
