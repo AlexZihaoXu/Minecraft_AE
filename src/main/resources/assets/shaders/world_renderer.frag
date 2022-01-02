@@ -1,5 +1,7 @@
 #version 330 core
 
+#define pi 3.14159265359
+
 in vec4 vColor;
 in vec2 texCoord;
 in float depth;
@@ -48,7 +50,16 @@ void main() {
     }
 
 
-    float envLightMultiplier = max(0.0, pow(sin(mod(time + 0.06, 1) * 0.8 * 3.14159265 * 2), 0.12));
+    float envLightMultiplier;
+    {
+        float x = time;
+        if (x < 0.75)
+            envLightMultiplier = pow(sin((x + 0.05) * 2 * pi / 1.2), 0.3);
+        else
+            envLightMultiplier = pow(sin((x + 0.25) * 2 * pi / 1.2), 0.3);
+
+        envLightMultiplier = max(0, envLightMultiplier);
+    }
 
     vec3 nightLight = vec3(0.17, 0.17, 0.28) * 2;
     vec3 dayLight = vec3(1, 1, 1);

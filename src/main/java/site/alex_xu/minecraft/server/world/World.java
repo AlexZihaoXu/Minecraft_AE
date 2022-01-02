@@ -33,8 +33,11 @@ public class World extends MinecraftAECore {
     }
 
     public void onTick(double deltaTime) {
-        if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_ENTER) == GLFW_PRESS) {
-            time += deltaTime;
+        if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_LEFT) == GLFW_PRESS) {
+            time -= deltaTime * 0.2f;
+        }
+        if (glfwGetKey(MinecraftClient.getInstance().getWindow().getWindowHandle(), GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            time += deltaTime * 0.2f;
         }
         time += deltaTime / 60 / 20;
         time %= 1.0;
