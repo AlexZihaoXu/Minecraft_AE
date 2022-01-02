@@ -136,6 +136,18 @@ public class WorldScreen extends Screen {
             }
         }
 
+        for (int x = -100; x <= 100; x++) {
+            for (int z = -20; z <= 20; z++) {
+                for (int y = 4; y <= 200; y++) {
+                    if (abs(x) == 100 || abs(z) == 20) {
+                        world.setBlock(Blocks.STONE, x, y, z);
+                    } else if (y == 200) {
+                        world.setBlock(Blocks.OAK_PLANKS, x, y, z);
+                    }
+                }
+            }
+        }
+
         {
             world.setBlock(Blocks.OAK_LOG, 3, 4, 5);
             world.setBlock(Blocks.OAK_LOG, 3, 5, 5);

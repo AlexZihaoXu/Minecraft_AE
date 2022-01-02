@@ -155,6 +155,8 @@ public class PlayerRenderer extends EntityRenderer {
 
         float level = renderer.getLightLevel();
 
+        renderer.setLightLevel(world.getEnvLight(world.blockXOf(position().x), world.blockYOf(position().y), world.blockZOf(position().z)) / 15f);
+
         renderer.render(camera, head, 0, getTexture());
         renderer.render(camera, body, 0, getTexture());
         renderer.render(camera, leftArm, 0, getTexture());

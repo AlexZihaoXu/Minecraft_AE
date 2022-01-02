@@ -49,7 +49,8 @@ final class LightTraveller {
         } else {
             ChunkSection s = section.getNearby(floorDiv(x, 16), floorDiv(y, 16), floorDiv(z, 16));
             if (s != null) {
-                changedChunks.add(s);
+                if (lightInformationOf(s).getLevel(floorMod(x, 16), floorMod(y, 16), floorMod(z, 16)) != level)
+                    changedChunks.add(s);
             }
         }
     }
@@ -81,14 +82,26 @@ final class LightTraveller {
         return max(level, (byte) (getNearbyMaxLevel(x, y, z) - 1));
     }
 
+    public boolean hasBlock(int x, int y, int z) {
+        if (inChunkRange(x, y, z))
+            return true;
+        return section.getNearby(floorDiv(x, 16), floorDiv(y, 16), floorDiv(z, 16)) != null;
+    }
+
     public byte getNearbyMaxLevel(int x, int y, int z) {
-        byte nearbyMaximum = 0;
-        nearbyMaximum = max(nearbyMaximum, getLevel(x + 1, y, z));
-        nearbyMaximum = max(nearbyMaximum, getLevel(x - 1, y, z));
-        nearbyMaximum = max(nearbyMaximum, getLevel(x, y + 1, z));
-        nearbyMaximum = max(nearbyMaximum, getLevel(x, y - 1, z));
-        nearbyMaximum = max(nearbyMaximum, getLevel(x, y, z + 1));
-        nearbyMaximum = max(nearbyMaximum, getLevel(x, y, z - 1));
+        byte nearbyMaximum = -1;
+//        if (hasBlock(x + 1, y, z))
+            nearbyMaximum = max(nearbyMaximum, getLevel(x + 1, y, z));
+//        if (hasBlock(x - 1, y, z))
+            nearbyMaximum = max(nearbyMaximum, getLevel(x - 1, y, z));
+//        if (hasBlock(x, y + 1, z))
+            nearbyMaximum = max(nearbyMaximum, getLevel(x, y + 1, z));
+//        if (hasBlock(x, y - 1, z))
+            nearbyMaximum = max(nearbyMaximum, getLevel(x, y - 1, z));
+//        if (hasBlock(x, y, z + 1))
+            nearbyMaximum = max(nearbyMaximum, getLevel(x, y, z + 1));
+//        if (hasBlock(x, y, z - 1))
+            nearbyMaximum = max(nearbyMaximum, getLevel(x, y, z - 1));
         return nearbyMaximum;
     }
 
@@ -129,9 +142,9 @@ final class LightTraveller {
                     byte level = getLevel(x, y, z);
                     byte desiredLevel = getDesiredLevel(x, y, z);
                     if (desiredLevel != level) {
-                        changed = true;
+                        if (inChunkRange(x, y, z))
+                            changed = true;
                         setLevel(desiredLevel, x, y, z);
-                        tryAddNearbyChunkAsInvolvedChunk(x, y, z);
                     }
 
                     planned.addFirst(new Vector3i(x + 1, y, z));
@@ -153,12 +166,11 @@ final class LightTraveller {
                         continue;
                     byte desiredLevel = max((byte) 0, (byte) (getNearbyMaxLevel(x, y, z) - 1));
                     if (section.getBlock(x, y, z).settings().material.blocksLight()) {
-                        desiredLevel = 0;
+                        setLevel((byte) 0, x, y, z);
                     }
-                    if (getLevel(x, y, z) != desiredLevel) {
+                    else if (getLevel(x, y, z) != desiredLevel) {
                         setLevel(desiredLevel, x, y, z);
                         changed = true;
-                        tryAddNearbyChunkAsInvolvedChunk(x, y, z);
                     }
                 }
             }
@@ -179,32 +191,35 @@ final class LightTraveller {
     }
 
     private void tryAddNearbyChunkAsInvolvedChunk(int x, int y, int z) {
-        if (x == 0) {
+        if (x == 0 && (y != 0 && y != 15) && (z != 0 && z != 15)) {
             if (section.west() != null) {
                 changedChunks.add(section.west());
             }
         }
-        if (x == 15) {
+        if (x == 15 && (y != 0 && y != 15) && (z != 0 && z != 15)) {
             if (section.east() != null) {
                 changedChunks.add(section.east());
             }
         }
-        if (y == 0) {
+        if (y == 0 && (x != 0 && x != 15) && (z != 0 && z != 15)) {
             if (section.bottom() != null) {
                 changedChunks.add(section.bottom());
+            } else {
+                if (section.getSectionY() > 0)
+                    section.getChunk().getOrCreateChunkSection(section.getSectionY() - 1);
             }
         }
-        if (y == 15) {
+        if (y == 15 && (x != 0 && x != 15) && (z != 0 && z != 15)) {
             if (section.top() != null) {
                 changedChunks.add(section.top());
             }
         }
-        if (z == 0) {
+        if (z == 0 && (y != 0 && y != 15) && (x != 0 && x != 15)) {
             if (section.north() != null) {
                 changedChunks.add(section.north());
             }
         }
-        if (z == 15) {
+        if (z == 15 && (y != 0 && y != 15) && (x != 0 && x != 15)) {
             if (section.south() != null) {
                 changedChunks.add(section.south());
             }

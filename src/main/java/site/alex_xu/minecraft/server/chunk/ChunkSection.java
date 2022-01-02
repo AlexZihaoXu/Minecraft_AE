@@ -140,11 +140,19 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         return null;
     }
 
-    public ChunkSection getNearby(int x, int y, int z) {
-        if (chunk.getWorld().hasChunk(chunk.getX() + x, chunk.getY() + z) && chunk.getWorld().getOrCreateChunk(chunk.getX() + x, chunk.getY() + z).hasSection(sectionY + y)) {
-            return chunk.getWorld().getOrCreateChunk(chunk.getX() + x, chunk.getY() + z).getOrCreateChunkSection(sectionY + y);
+    public ChunkSection getNearby(int x, int y, int z, boolean createIfNotExist) {
+        if (createIfNotExist) {
+            chunk.getWorld().getOrCreateChunk(chunk.getX() + x, chunk.getY() + z).getOrCreateChunkSection(sectionY + y);
+        } else {
+            if (chunk.getWorld().hasChunk(chunk.getX() + x, chunk.getY() + z) && chunk.getWorld().getOrCreateChunk(chunk.getX() + x, chunk.getY() + z).hasSection(sectionY + y)) {
+                return chunk.getWorld().getOrCreateChunk(chunk.getX() + x, chunk.getY() + z).getOrCreateChunkSection(sectionY + y);
+            }
         }
         return null;
+    }
+
+    public ChunkSection getNearby(int x, int y, int z) {
+        return getNearby(x, y, z, false);
     }
 
     //
