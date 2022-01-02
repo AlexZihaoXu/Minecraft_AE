@@ -14,6 +14,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
     private final HashSet<ChunkSectionCreationCallbackI> chunkCreationCallbacks = new HashSet<>();
     private final HashSet<ChunkDisposeCallbackI> chunkDisposeCallbacks = new HashSet<>();
     private final int x, y;
+    private ChunkSection topSection = null;
     private final World world;
 
     public World getWorld() {
@@ -56,6 +57,12 @@ public class Chunk extends MinecraftAECore implements Tickable {
         int sectionY = y / sections.length;
         if (sectionY >= 0 && sectionY < 16) {
             if (sections[sectionY] == null) {
+                for (int sy = sectionY; sy < 16; sy++) {
+                    if (hasSection(sy)) {
+                        return getOrCreateChunkSection(sy).getEnvLightLevel(x, 0, z);
+                    }
+                }
+
                 return 0;
             }
             return sections[sectionY].getEnvLightLevel(x, Math.floorMod(y, 16), z);
@@ -86,6 +93,9 @@ public class Chunk extends MinecraftAECore implements Tickable {
             return null;
         if (sections[sectionY] == null) {
             sections[sectionY] = new ChunkSection(this, sectionY);
+            if (topSection == null || topSection.getSectionY() < sectionY) {
+                topSection = sections[sectionY];
+            }
             for (ChunkSectionCreationCallbackI chunkCreationCallback : chunkCreationCallbacks) {
                 chunkCreationCallback.execute(this, sections[sectionY]);
             }
@@ -105,6 +115,10 @@ public class Chunk extends MinecraftAECore implements Tickable {
 
     public boolean hasSection(int chunkSectionY) {
         return chunkSectionY >= 0 && chunkSectionY < 16 && sections[chunkSectionY] != null;
+    }
+
+    public ChunkSection getTopSection() {
+        return topSection;
     }
 
     public interface ChunkSectionCreationCallbackI extends Callback {

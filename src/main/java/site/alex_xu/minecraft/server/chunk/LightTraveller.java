@@ -42,7 +42,10 @@ final class LightTraveller {
 
     public void setLevel(byte level, int x, int y, int z) {
         if (inChunkRange(x, y, z)) {
-            lightInformationOf(section).setLevel(level, x, y, z);
+            if (lightInformationOf(section).getLevel(x, y, z) != level) {
+                lightInformationOf(section).setLevel(level, x, y, z);
+                tryAddNearbyChunkAsInvolvedChunk(x, y, z);
+            }
         } else {
             ChunkSection s = section.getNearby(floorDiv(x, 16), floorDiv(y, 16), floorDiv(z, 16));
             if (s != null) {

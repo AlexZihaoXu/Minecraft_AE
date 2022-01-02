@@ -21,11 +21,21 @@ public class World extends MinecraftAECore {
 
     private float time = 0;
     private final Vector3f loadingCenter = new Vector3f();
+    private final WorldStatistics statistics = new WorldStatistics();
+    // Statistics
+
+    private final LinkedList<Long> _chunkUpdateTimesList = new LinkedList<>();
+
+    //
 
     private final LinkedList<ChunkSection> queuedUpdatingSections = new LinkedList<>();
 
     public Vector3f loadingCenter() {
         return loadingCenter;
+    }
+
+    public WorldStatistics getWorldStatistics() {
+        return statistics;
     }
 
     public void onTick(double deltaTime) {
@@ -41,12 +51,21 @@ public class World extends MinecraftAECore {
             chunk.onTick(deltaTime);
         }
 
+        long now = System.currentTimeMillis();
         for (int i = 0; i < 4; i++) {
             if (!queuedUpdatingSections.isEmpty()) {
                 ChunkSection section = queuedUpdatingSections.removeLast();
                 section.onChunkSectionModelUpdate();
+                _chunkUpdateTimesList.addLast(now);
             }
         }
+
+        while (!_chunkUpdateTimesList.isEmpty() && now - _chunkUpdateTimesList.getFirst() > 1000) {
+            _chunkUpdateTimesList.removeFirst();
+        }
+
+        statistics.chunkUpdatesPerSecond = _chunkUpdateTimesList.size();
+
     }
 
     // Lights
@@ -58,7 +77,7 @@ public class World extends MinecraftAECore {
             }
             return 0;
         }
-        return 0;
+        return 15;
     }
 
     // Blocks

@@ -28,9 +28,10 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     }
 
     public byte getEnvLightLevel(int x, int y, int z) {
+
         if (sectionY == 0 && y < 0)
             return 15;
-        if (sectionY == 15 && y > 15)
+        if (isTopSection() && y > 15)
             return 15;
         if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0) {
             var world = getChunk().getWorld();
@@ -220,18 +221,44 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         return block == null ? Blocks.AIR : block;
     }
 
-    public void onChunkSectionModelUpdate() {
+    public boolean isTopSection() {
+        return getChunk().getTopSection() == this;
+    }
 
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                boolean source = true;
-                for (int y = 15; y >= 0; y--) {
-                    if (getBlock(x, y, z).settings().material.blocksLight())
-                        source = false;
-                    if (source)
-                        envLightInformation.setSource(15, x, y, z);
-                    else
-                        envLightInformation.removeSource(x, y, z);
+    public void onChunkSectionModelUpdate() {
+        if (isTopSection()) {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    boolean source = true;
+                    for (int y = 15; y >= 0; y--) {
+                        if (getBlock(x, y, z).settings().material.blocksLight())
+                            source = false;
+                        if (source)
+                            envLightInformation.setSource(15, x, y, z);
+                        else
+                            envLightInformation.removeSource(x, y, z);
+                    }
+                }
+            }
+        } else {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    boolean source = true;
+                    if (getEnvLightLevel(x, 16, z) == 15) {
+                        for (int y = 15; y >= 0; y--) {
+                            if (getBlock(x, y, z).settings().material.blocksLight())
+                                source = false;
+                            if (source)
+                                envLightInformation.setSource(15, x, y, z);
+                            else
+                                envLightInformation.removeSource(x, y, z);
+                        }
+                    } else {
+                        for (int y = 15; y >= 0; y--) {
+                            envLightInformation.removeSource(x, y, z);
+                        }
+                        envLightInformation.setLevel(getEnvLightLevel(x, 16, z), x, 15, z);
+                    }
                 }
             }
         }

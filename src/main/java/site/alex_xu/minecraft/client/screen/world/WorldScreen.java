@@ -408,6 +408,7 @@ public class WorldScreen extends Screen {
                     "Minecraft(AE) " + Minecraft.VERSION,
                     fps + " FPS ",
                     "XYZ: " + String.format("%.3f / %.3f / %.3f", camera.position.x, camera.position.y, camera.position.z),
+                    "Chunk Updates: " + world.getWorldStatistics().getChunkUpdatesPerSecond(),
                     "Light Level: " + world.getEnvLight(world.blockXOf(player.position().x), world.blockYOf(player.position().y), world.blockZOf(player.position().z)),
                     debugInfo
             };
