@@ -61,17 +61,6 @@ public class Chunk extends MinecraftAECore implements Tickable {
         return Blocks.AIR;
     }
 
-    public byte getEnvironmentLight(int x, int y, int z) {
-        int sectionY = y / sections.length;
-        if (sectionY >= 0 && sectionY < 16) {
-            if (sections[sectionY] == null) {
-                return 0;
-            }
-            return sections[sectionY].getEnvLightLevel(x, Math.floorMod(y, 16), z);
-        }
-        return 0;
-    }
-
     public void setBlock(Block block, int x, int y, int z) {
         int sectionY = y / sections.length;
         getOrCreateChunkSection(sectionY).setBlock(block, x, Math.floorMod(y, 16), z);
@@ -96,6 +85,7 @@ public class Chunk extends MinecraftAECore implements Tickable {
                 section.onTick(deltaTime);
             }
         }
+
     }
 
     public boolean hasSection(int chunkSectionY) {

@@ -125,7 +125,7 @@ public class WorldScreen extends Screen {
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
 
-        int viewDistance = 12;
+        int viewDistance = 1;
         for (int x = -viewDistance * 16; x < viewDistance * 16; x++) {
             for (int z = -viewDistance * 16; z < viewDistance * 16; z++) {
                 for (int y = 1; y < 3; y++) {
@@ -350,11 +350,7 @@ public class WorldScreen extends Screen {
                 renderer.renderBox(camera, 0, 0, 0, 1, 1, 1, true);
             }
         }
-        debugInfo = "Time: " + String.format("%.2f %%", time * 100) + " | Light Level: " + world.getEnvironmentLight(
-                world.blockXOf(player.position().x),
-                world.blockYOf(player.position().y),
-                world.blockZOf(player.position().z)
-        );
+        debugInfo = "Time: " + String.format("%.2f %%", time * 100);
         world.loadingCenter().set(camera.position);
     }
 

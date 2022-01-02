@@ -1,7 +1,5 @@
 package site.alex_xu.minecraft.server.chunk;
 
-import org.apache.logging.log4j.LogManager;
-import org.joml.Vector3i;
 import site.alex_xu.minecraft.core.MinecraftAECore;
 import site.alex_xu.minecraft.core.Tickable;
 import site.alex_xu.minecraft.server.Directions;
@@ -19,31 +17,10 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     private final Block[][][] blocks = new Block[16][16][16];
     private final HashSet<ChunkEventCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
     private final HashSet<ChunkEventCallbackI> chunkDisposeCallbackIs = new HashSet<>();
-    private boolean requiresModelUpdate = false;
     private final Chunk chunk;
     private final int sectionY;
-    private final LinkedList<ChunkSection> tryUpdatingSections = new LinkedList<>();
-    private final LightInformation envLightInfo = new LightInformation();
-    private boolean modelUpdated = false;
 
     // Lights
-
-    LightInformation getEnvLightInfo() {
-        return envLightInfo;
-    }
-
-    public byte getEnvLightLevel(int x, int y, int z) {
-        if (x >= 0 && x < 16 && y >= 0 && y < 16 && z >= 0 && z < 16) {
-            return getEnvLightInfo().getMaxLevel(x, y, z);
-        } else {
-            ChunkSection nearby = nearby(Math.floorDiv(x, 16), Math.floorDiv(y, 16), Math.floorDiv(z, 16));
-            if (nearby != null) {
-                return nearby.getEnvLightLevel(Math.floorMod(x, 16), Math.floorMod(y, 16), Math.floorMod(z, 16));
-            }
-        }
-        return 0;
-    }
-
 
     // Callbacks
     public void registerChunkModelUpdateCallback(ChunkEventCallbackI chunkModelUpdateCallbackI) {
@@ -77,22 +54,22 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
 
     public boolean tryUpdateNearbyChunk(int direction) {
         if (direction == Directions.TOP && chunk.hasSection(sectionY + 1)) { // TOP
-            tryUpdatingSections.add(top());
+            top().tryUpdate();
             return true;
         } else if (direction == Directions.BOTTOM && chunk.hasSection(sectionY - 1)) { // BOTTOM
-            tryUpdatingSections.add(bottom());
+            bottom().tryUpdate();
             return true;
         } else if (direction == Directions.NORTH && chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() - 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() - 1).hasSection(sectionY)) { // North
-            tryUpdatingSections.add(north());
+            north().tryUpdate();
             return true;
         } else if (direction == Directions.SOUTH && chunk.getWorld().hasChunk(chunk.getX(), chunk.getY() + 1) && chunk.getWorld().getOrCreateChunk(chunk.getX(), chunk.getY() + 1).hasSection(sectionY)) { // South
-            tryUpdatingSections.add(south());
+            south().tryUpdate();
             return true;
         } else if (direction == Directions.WEST && chunk.getWorld().hasChunk(chunk.getX() - 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() - 1, chunk.getY()).hasSection(sectionY)) { // West
-            tryUpdatingSections.add(west());
+            west().tryUpdate();
             return true;
         } else if (direction == Directions.EAST && chunk.getWorld().hasChunk(chunk.getX() + 1, chunk.getY()) && chunk.getWorld().getOrCreateChunk(chunk.getX() + 1, chunk.getY()).hasSection(sectionY)) { // East
-            tryUpdatingSections.add(east());
+            east().tryUpdate();
             return true;
         }
         return false;
@@ -142,7 +119,7 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         return null;
     }
 
-    public ChunkSection nearby(int x, int y, int z) {
+    public ChunkSection getNearby(int x, int y, int z) {
         if (chunk.getWorld().hasChunk(chunk.getX() + x, chunk.getY() + z) && chunk.getWorld().getOrCreateChunk(chunk.getX() + x, chunk.getY() + z).hasSection(sectionY + y)) {
             return chunk.getWorld().getOrCreateChunk(chunk.getX() + x, chunk.getY() + z).getOrCreateChunkSection(sectionY + y);
         }
@@ -223,45 +200,19 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
         return block == null ? Blocks.AIR : block;
     }
 
-    public void modelUpdate() {
-        LightTraveller traveller = new LightTraveller(this, ChunkSection::getEnvLightInfo);
+    public void onChunkSectionModelUpdate() {
 
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = 15; y >= 0; y--) {
-                    if (getBlock(x, y, z).settings().material.blocksLight())
-                        break;
-                    traveller.addSource(x, y, z);
-                }
-            }
+        for (ChunkEventCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
+            chunkModelUpdateCallbackI.execute(this);
         }
-
-        traveller.travel();
-
-        modelUpdated = true;
-        for (ChunkSection tryUpdatingSection : tryUpdatingSections) {
-            tryUpdatingSection.requiresModelUpdate = true;
-        }
-        tryUpdatingSections.clear();
-
     }
 
     @Override
     public void onTick(double deltaTime) {
-        if (requiresModelUpdate) {
-            getChunk().getWorld().queueUpdatingSection(this);
-            requiresModelUpdate = false;
-        }
-        if (modelUpdated) {
-            modelUpdated = false;
-            for (ChunkEventCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
-                chunkModelUpdateCallbackI.execute(this);
-            }
-        }
     }
 
     public void tryUpdate() {
-        requiresModelUpdate = true;
+        getChunk().getWorld().queueUpdatingSection(this);
     }
 
     public interface ChunkEventCallbackI extends Callback {

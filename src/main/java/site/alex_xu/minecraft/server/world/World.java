@@ -1,6 +1,5 @@
 package site.alex_xu.minecraft.server.world;
 
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import site.alex_xu.minecraft.client.MinecraftClient;
 import site.alex_xu.minecraft.core.MinecraftAECore;
@@ -10,7 +9,6 @@ import site.alex_xu.minecraft.server.chunk.Chunk;
 import site.alex_xu.minecraft.server.chunk.ChunkSection;
 
 import javax.security.auth.callback.Callback;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.TreeMap;
@@ -20,13 +18,11 @@ import static org.lwjgl.glfw.GLFW.*;
 public class World extends MinecraftAECore {
 
     private final HashSet<ChunkCreationCallbackI> chunkCreationCallbacks = new HashSet<>();
-    private LinkedList<Thread> chunkModelUpdateThreads = new LinkedList<>();
 
     private float time = 0;
     private final Vector3f loadingCenter = new Vector3f();
 
     private final LinkedList<ChunkSection> queuedUpdatingSections = new LinkedList<>();
-    private final HashSet<ChunkSection> queuedUpdatingSectionSet = new HashSet<>();
 
     public Vector3f loadingCenter() {
         return loadingCenter;
@@ -45,19 +41,9 @@ public class World extends MinecraftAECore {
             chunk.onTick(deltaTime);
         }
 
-        if (!queuedUpdatingSections.isEmpty() && chunkModelUpdateThreads.size() < Math.min(8, Math.max(1, Runtime.getRuntime().availableProcessors()))) {
-            queuedUpdatingSections.sort(Comparator.comparingDouble(o -> Vector2f.distanceSquared(o.getChunk().getX(), o.getChunk().getY(), Math.floorDiv((int) loadingCenter.x, 16), Math.floorDiv((int) loadingCenter.y, 16))));
-            ChunkSection section = queuedUpdatingSections.removeFirst();
-            Thread thread = new Thread(() -> {
-                section.modelUpdate();
-                queuedUpdatingSectionSet.remove(section);
-            });
-            thread.start();
-            chunkModelUpdateThreads.addLast(thread);
-        }
-
-        if (!chunkModelUpdateThreads.isEmpty() && !chunkModelUpdateThreads.getFirst().isAlive()) {
-            chunkModelUpdateThreads.removeFirst();
+        if (!queuedUpdatingSections.isEmpty()) {
+            ChunkSection section = queuedUpdatingSections.removeLast();
+            section.onChunkSectionModelUpdate();
         }
     }
 
@@ -76,10 +62,12 @@ public class World extends MinecraftAECore {
     }
 
     public void queueUpdatingSection(ChunkSection section) {
-        if (queuedUpdatingSectionSet.contains(section))
-            return;
-        queuedUpdatingSections.add(section);
-        queuedUpdatingSectionSet.add(section);
+        if (queuedUpdatingSections.contains(section)) {
+            queuedUpdatingSections.remove(section);
+            queuedUpdatingSections.addFirst(section);
+        } else {
+            queuedUpdatingSections.addFirst(section);
+        }
     }
 
     public Block getBlock(float x, float y, float z) {
@@ -92,16 +80,6 @@ public class World extends MinecraftAECore {
 
     public float getTime() {
         return time;
-    }
-
-    public byte getEnvironmentLight(int x, int y, int z) {
-        if (y >= 0 && y < 256) {
-            if (hasChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16))) {
-                return getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).getEnvironmentLight(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
-            }
-            return 0;
-        }
-        return 0;
     }
 
     public record ChunkPos(int x, int y) implements Comparable<ChunkPos> {
