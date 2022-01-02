@@ -41,11 +41,27 @@ public class World extends MinecraftAECore {
             chunk.onTick(deltaTime);
         }
 
-        if (!queuedUpdatingSections.isEmpty()) {
-            ChunkSection section = queuedUpdatingSections.removeLast();
-            section.onChunkSectionModelUpdate();
+        for (int i = 0; i < 4; i++) {
+            if (!queuedUpdatingSections.isEmpty()) {
+                ChunkSection section = queuedUpdatingSections.removeLast();
+                section.onChunkSectionModelUpdate();
+            }
         }
     }
+
+    // Lights
+
+    public byte getEnvLight(int x, int y, int z) {
+        if (y >= 0 && y < 256) {
+            if (hasChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16))) {
+                return getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).getEnvLightLevel(Math.floorMod(x, 16), y, Math.floorMod(z, 16));
+            }
+            return 0;
+        }
+        return 0;
+    }
+
+    // Blocks
 
     public void setBlock(Block block, int x, int y, int z) {
         getOrCreateChunk(Math.floorDiv(x, 16), Math.floorDiv(z, 16)).setBlock(block, Math.floorMod(x, 16), y, Math.floorMod(z, 16));

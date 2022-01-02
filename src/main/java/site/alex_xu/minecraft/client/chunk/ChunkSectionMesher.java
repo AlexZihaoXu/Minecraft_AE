@@ -60,7 +60,7 @@ public class ChunkSectionMesher extends MinecraftAECore {
             }
 
             float blockLight = 0;
-            float envLight = 0.5f;
+            float envLight = 0;
 
             boolean canceled = false;
             if (direction != -1) {
@@ -70,41 +70,49 @@ public class ChunkSectionMesher extends MinecraftAECore {
                     if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
+                    envLight = section.getEnvLightLevel(x, y, z - 1);
                 } else if (direction == 1) { // South
                     Block block = section.getBlock(x, y, (z + 1));
                     block = block == null ? Blocks.AIR : block;
                     if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
+                    envLight = section.getEnvLightLevel(x, y, z + 1);
                 } else if (direction == 2) { // West
                     Block block = section.getBlock(x - 1, y, z);
                     block = block == null ? Blocks.AIR : block;
                     if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
+                    envLight = section.getEnvLightLevel(x - 1, y, z);
                 } else if (direction == 3) { // East
                     Block block = section.getBlock(x + 1, y, z);
                     block = block == null ? Blocks.AIR : block;
                     if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
+                    envLight = section.getEnvLightLevel(x + 1, y, z);
                 } else if (direction == 4) { // Top
                     Block block = section.getBlock(x, y + 1, z);
                     block = block == null ? Blocks.AIR : block;
                     if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
+                    envLight = section.getEnvLightLevel(x, y + 1, z);
                 } else { // Bottom
                     Block block = section.getBlock(x, y - 1, z);
                     block = block == null ? Blocks.AIR : block;
                     if (cancelingTestFunc.execute(block)) {
                         canceled = true;
                     }
+                    envLight = section.getEnvLightLevel(x, y - 1, z);
                 }
             }
 
             if (!canceled) {
                 Rectangle2D.Float bound = TextureAtlas.getInstance().getTextureBound(self.texturePathMap.get(face.name()));
+
+                envLight /= 15f;
 
                 int a = builder.vertex(x + vv1.x(), y + vv1.y(), z + vv1.z(), shadow, blockLight, envLight, 0, (float) bound.getMinX(), (float) bound.getMinY());
                 int b;

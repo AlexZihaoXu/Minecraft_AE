@@ -50,6 +50,21 @@ public class Chunk extends MinecraftAECore implements Tickable {
         return y;
     }
 
+    // Lights
+
+    public byte getEnvLightLevel(int x, int y, int z) {
+        int sectionY = y / sections.length;
+        if (sectionY >= 0 && sectionY < 16) {
+            if (sections[sectionY] == null) {
+                return 0;
+            }
+            return sections[sectionY].getEnvLightLevel(x, Math.floorMod(y, 16), z);
+        }
+        return 0;
+    }
+
+    // Blocks
+
     public Block getBlock(int x, int y, int z) {
         int sectionY = y / sections.length;
         if (sectionY >= 0 && sectionY < 16) {

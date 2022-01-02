@@ -125,7 +125,7 @@ public class WorldScreen extends Screen {
 
         MinecraftClient.getInstance().getWindow().registerKeyChangeCallback(this::onKeyChange);
 
-        int viewDistance = 1;
+        int viewDistance = 10;
         for (int x = -viewDistance * 16; x < viewDistance * 16; x++) {
             for (int z = -viewDistance * 16; z < viewDistance * 16; z++) {
                 for (int y = 1; y < 3; y++) {
@@ -244,6 +244,12 @@ public class WorldScreen extends Screen {
         }
 
         world.setBlock(Blocks.OAK_LEAVES, 5, 5, 5);
+
+        for (int x = 0; x < 10; x++) {
+            for (int z = 0; z < 10; z++) {
+                world.setBlock(Blocks.STONE, x + 2, 14, z + 2);
+            }
+        }
     }
 
     @Override
@@ -402,6 +408,7 @@ public class WorldScreen extends Screen {
                     "Minecraft(AE) " + Minecraft.VERSION,
                     fps + " FPS ",
                     "XYZ: " + String.format("%.3f / %.3f / %.3f", camera.position.x, camera.position.y, camera.position.z),
+                    "Light Level: " + world.getEnvLight(world.blockXOf(player.position().x), world.blockYOf(player.position().y), world.blockZOf(player.position().z)),
                     debugInfo
             };
 

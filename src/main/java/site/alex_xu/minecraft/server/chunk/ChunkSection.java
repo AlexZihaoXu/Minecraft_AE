@@ -17,10 +17,30 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     private final Block[][][] blocks = new Block[16][16][16];
     private final HashSet<ChunkEventCallbackI> chunkModelUpdateCallbackIs = new HashSet<>();
     private final HashSet<ChunkEventCallbackI> chunkDisposeCallbackIs = new HashSet<>();
+    private final LightInformation envLightInformation = new LightInformation();
     private final Chunk chunk;
     private final int sectionY;
 
     // Lights
+
+    public LightInformation getEnvLightInformation() {
+        return envLightInformation;
+    }
+
+    public byte getEnvLightLevel(int x, int y, int z) {
+        if (sectionY == 0 && y < 0)
+            return 15;
+        if (sectionY == 15 && y > 15)
+            return 15;
+        if (x >= 16 || x < 0 || y >= 16 || y < 0 || z >= 16 || z < 0) {
+            var world = getChunk().getWorld();
+            var originX = getChunk().getX() * 16;
+            var originY = sectionY * 16;
+            var originZ = getChunk().getY() * 16;
+            return world.getEnvLight(originX + x, originY + y, originZ + z);
+        }
+        return getEnvLightInformation().getLevel(x, y, z);
+    }
 
     // Callbacks
     public void registerChunkModelUpdateCallback(ChunkEventCallbackI chunkModelUpdateCallbackI) {
@@ -201,6 +221,26 @@ public class ChunkSection extends MinecraftAECore implements Tickable {
     }
 
     public void onChunkSectionModelUpdate() {
+
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                boolean source = true;
+                for (int y = 15; y >= 0; y--) {
+                    if (getBlock(x, y, z).settings().material.blocksLight())
+                        source = false;
+                    if (source)
+                        envLightInformation.setSource(15, x, y, z);
+                    else
+                        envLightInformation.removeSource(x, y, z);
+                }
+            }
+        }
+
+        LightTraveller traveller = new LightTraveller(this, ChunkSection::getEnvLightInformation);
+        if (traveller.perform()) {
+            tryUpdate();
+        }
+        traveller.tryUpdateInvolvedChunks();
 
         for (ChunkEventCallbackI chunkModelUpdateCallbackI : chunkModelUpdateCallbackIs) {
             chunkModelUpdateCallbackI.execute(this);
