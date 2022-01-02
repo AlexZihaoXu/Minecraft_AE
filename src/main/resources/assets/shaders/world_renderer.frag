@@ -50,15 +50,15 @@ void main() {
 
     float envLightMultiplier = max(0.0, pow(sin(mod(time + 0.06, 1) * 0.8 * 3.14159265 * 2), 0.12));
 
-    vec3 nightLight = vec3(0.17, 0.17, 0.28);
+    vec3 nightLight = vec3(0.17, 0.17, 0.28) * 2;
     vec3 dayLight = vec3(1, 1, 1);
 
     vec3 timeLight = mix(nightLight, dayLight, envLightMultiplier);
 
     vec3 finalColor = vec3(
-    max(blockLight, envLight * envLightMultiplier * timeLight.r) * shadow * lightLevel * 0.6 + 0.4,
-    max(blockLight, envLight * envLightMultiplier * timeLight.g) * shadow * lightLevel * 0.6 + 0.4,
-    max(blockLight, envLight * envLightMultiplier * timeLight.b) * shadow * lightLevel * 0.6 + 0.4
+    max(blockLight, envLight * timeLight.r) * shadow * lightLevel * 0.9 + 0.1,
+    max(blockLight, envLight * timeLight.g) * shadow * lightLevel * 0.9 + 0.1,
+    max(blockLight, envLight * timeLight.b) * shadow * lightLevel * 0.9 + 0.1
     );
 
     vec4 lightColor = vec4(
